@@ -26,7 +26,7 @@ for arg in "${OVERLORD_ARGV[@]}"; do
     case $arg in
     --version)
         echo "Overlord version v$OVERLORD_VERSION"
-        echo "Built on $(git show --format="%aD" --quiet)"
+        echo "Built on $(git show --format="%cd" --date=local --quiet)"
         exit 0
         ;;
 
