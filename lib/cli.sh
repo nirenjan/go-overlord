@@ -4,7 +4,7 @@ require cli/help
 
 overlord_parse_verbose()
 {
-    local verbose=$(sed 's/--verbose=//' <<< $1)
+    local verbose=${1/--verbose=/}
 
     if grep -q "^[0-7]$" <<< $verbose
     then
