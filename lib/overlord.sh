@@ -18,4 +18,6 @@ require()
 require logging # Logging APIs - all of them print to STDOUT/STDERR, so no real
                 # "logging" per se
 require version # Version information
-require cli
+
+require cli     # This should be the last one since it starts executing the
+                # commands

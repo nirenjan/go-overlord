@@ -14,6 +14,10 @@ else
     OVERLORD_DIR=$PWD
 fi
 
+# Save command line arguments for later use by the CLI processor
+OVERLORD_ARGC=$#
+OVERLORD_ARGV=("$@")
+
 # Make sure we haven't been linked to a different folder
 if [[ ! -e $OVERLORD_DIR/lib/overlord.sh ]]
 then
