@@ -23,7 +23,7 @@ msg()
     then
         for m in "$@"
         do
-            echo "overlord: $m" >&$fd
+            echo -e "overlord: $m" >&$fd
         done
     fi
 }
