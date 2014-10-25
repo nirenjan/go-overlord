@@ -1,20 +1,7 @@
 # Overlord CLI
 
 require cli/help
-
-overlord_parse_verbose()
-{
-    local verbose=${1/--verbose=/}
-
-    if grep -q "^[0-7]$" <<< $verbose
-    then
-        OVERLORD_LOGLEVEL=$verbose
-        msg_debug "Setting verbose level to '$verbose'"
-    else
-        warn_err "Invalid verbosity level '$verbose'"
-        exit 2
-    fi
-}
+require cli/utils
 
 msg_debug "ARGC = $OVERLORD_ARGC"
 if [[ $OVERLORD_ARGC == 0 ]]
@@ -52,7 +39,7 @@ for arg in "${OVERLORD_ARGV[@]}"; do
         ;;
 
     --*|-*)
-        warn_err "Unrecognized option '$arg'"
+        warn_emerg "Unrecognized option '$arg'"
         exit 1
         ;;
 
@@ -73,33 +60,37 @@ msg_debug "Argument Index is now $OVERLORD_ARG_INDEX"
 # No commands left over after option processing
 if [[ $OVERLORD_ARG_INDEX == $OVERLORD_ARGC ]]
 then
-    warn_err "Command required after options!\n"
+    warn_emerg "Command required after options!\n"
     show_usage
     exit 0
 fi
 
 # Command processing
-for cmd in ${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}; do
-    msg_debug "Arg[$OVERLORD_ARG_INDEX] = '$cmd'"
-    case $cmd in
-    journal)
-        warn_err "Journal not implemented yet!"
-        exit 1
-        ;;
+OVERLORD_COMMAND=${OVERLORD_ARGV[$OVERLORD_ARG_INDEX]}
+OVERLORD_ARG_INDEX=$(( $OVERLORD_ARG_INDEX + 1 ))
 
-    note)
-        warn_err "Notes not implemented yet!"
-        exit 1
-        ;;
+msg_debug "OVERLORD_COMMAND is $OVERLORD_COMMAND"
+msg_debug "Argument index is now $OVERLORD_ARG_INDEX"
 
-    remind)
-        warn_err "Reminders not implemented yet!"
-        exit 1
-        ;;
+case $OVERLORD_COMMAND in
+journal)
+    # journal_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
+    warn_err "Journal not implemented yet!"
+    exit 1
+    ;;
 
-    *)
-        warn_err "Unrecognized command '$cmd'"
-        exit 1
-        ;;
-    esac
-done
+note)
+    warn_err "Notes not implemented yet!"
+    exit 1
+    ;;
+
+remind)
+    warn_err "Reminders not implemented yet!"
+    exit 1
+    ;;
+
+*)
+    warn_emerg "Unrecognized command '$OVERLORD_COMMAND'"
+    exit 1
+    ;;
+esac
