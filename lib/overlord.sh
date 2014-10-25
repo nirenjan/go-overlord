@@ -6,22 +6,22 @@ OVERLORD_SOURCE=''
 # This function sources the individual files relative to $OVERLORD_DIR/lib/
 require()
 {
-    local file=$OVERLORD_DIR/lib/${1}.sh
-    local fn=${1//\//-}
+    local fn=$1
+    local file=$OVERLORD_DIR/lib/$fn.sh
 
     if [[ ! -e $file ]]
     then
-        echo "overlord: fatal: cannot find required library file $1" >&2
+        echo "overlord: fatal: cannot find required library file $fn" >&2
         exit 1
     fi
 
     # Include guard
-    if [[ "$OVERLORD_SOURCE" == *"$fn"* ]]
+    if [[ "$OVERLORD_SOURCE" == *" $fn "* ]]
     then
-        echo "overlord: warning: already included library file $1" >&2
+        echo "overlord: warning: already included library file $fn" >&2
         return
     fi
-    OVERLORD_SOURCE="$OVERLORD_SOURCE $fn"
+    OVERLORD_SOURCE="$OVERLORD_SOURCE $fn "
 
     source $file
 }
