@@ -6,4 +6,7 @@
 OVERLORD_DATA="$HOME/.overlord"
 
 # Location of Overlord configuration
-OVERLORD_CONFIG="$OVERLORD_DATA/config"
+OVERLORD_CONFIG="$OVERLORD_DATA/.git/config"
+
+# Make sure that we are using .git as the GIT_DIR
+unset GIT_DIR

@@ -89,6 +89,10 @@ remind)
     exit 1
     ;;
 
+init)
+    init_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
+    ;;
+
 *)
     warn_emerg "Unrecognized command '$OVERLORD_COMMAND'"
     exit 1

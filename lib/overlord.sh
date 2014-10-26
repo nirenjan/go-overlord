@@ -30,5 +30,13 @@ require logging # Logging APIs - all of them print to STDOUT/STDERR, so no real
                 # "logging" per se
 require version # Version information
 
+require config  # Configuration information
+require init    # Intialization info - this should be before other modules
+
+# TODO: Uncomment these once the corresponding module is created
+# require journal
+# require notes
+# require remind
+
 require cli     # This should be the last one since it starts executing the
                 # commands
