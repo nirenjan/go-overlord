@@ -24,6 +24,45 @@ create_overlord_database()
     git init --quiet
 }
 
+register_module()
+{
+    local module=$1
+    msg_debug "Registering module $module"
+
+    if [[ -z $OVERLORD_DEFAULT_MODULES ]]
+    then
+        OVERLORD_DEFAULT_MODULES=$module
+    else
+        OVERLORD_DEFAULT_MODULES="$OVERLORD_DEFAULT_MODULES $module"
+    fi
+}
+
+# Check if the given module is registered
+module_registered()
+{
+    [[ "$OVERLORD_DEFAULT_MODULES" == *"$1"* ]]
+
+}
+
+init_validate_and_add_module()
+{
+    local module=$1
+
+    if ! module_registered $module
+    then
+        warn_emerg "fatal: module $module not recognized"
+        exit 1
+    fi
+
+    if [[ "$OVERLORD_INIT_MODULES" != *" $module "* ]]
+    then
+        msg_debug "Adding module $module to INIT_MODULES"
+        OVERLORD_INIT_MODULES="$OVERLORD_INIT_MODULES $module "
+    else
+        msg_debug "Already added module $module to INIT_MODULES, ignoring"
+    fi
+}
+
 overlord_init()
 {
     if check_overlord_installed
@@ -44,7 +83,6 @@ overlord_init()
     for module in $OVERLORD_INIT_MODULES
     do
         msg_debug "Calling ${module}_init"
-        # TODO: Remove echo when all module init is complete
-        echo ${module}_init
+        ${module}_init
     done
 }

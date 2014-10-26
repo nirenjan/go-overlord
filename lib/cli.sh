@@ -73,28 +73,24 @@ msg_debug "OVERLORD_COMMAND is $OVERLORD_COMMAND"
 msg_debug "Argument index is now $OVERLORD_ARG_INDEX"
 
 case $OVERLORD_COMMAND in
-journal)
-    # journal_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
-    warn_err "Journal not implemented yet!"
-    exit 1
-    ;;
-
-note)
-    warn_err "Notes not implemented yet!"
-    exit 1
-    ;;
-
-remind)
-    warn_err "Reminders not implemented yet!"
-    exit 1
-    ;;
-
 init)
     init_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
     ;;
 
+help)
+    # Calls module --help
+    help_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
+    ;;
+
 *)
-    warn_emerg "Unrecognized command '$OVERLORD_COMMAND'"
-    exit 1
+    if module_registered $OVERLORD_COMMAND
+    then
+        msg_debug "Calling ${OVERLORD_COMMAND}_cli"
+        msg_debug "Arguments: ${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
+        ${OVERLORD_COMMAND}_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
+    else
+        warn_emerg "Unrecognized command '$OVERLORD_COMMAND'"
+        exit 1
+    fi
     ;;
 esac

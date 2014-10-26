@@ -35,38 +35,6 @@ Available modules:
 EOM
 }
 
-init_register_module()
-{
-    local module=$1
-    msg_debug "Registering module $module"
-
-    if [[ -z $OVERLORD_DEFAULT_MODULES ]]
-    then
-        OVERLORD_DEFAULT_MODULES=$module
-    else
-        OVERLORD_DEFAULT_MODULES="$OVERLORD_DEFAULT_MODULES $module"
-    fi
-}
-
-init_validate_and_add_module()
-{
-    local module=$1
-
-    if [[ "$OVERLORD_DEFAULT_MODULES" != *"$module"* ]]
-    then
-        warn_emerg "fatal: module $module not recognized"
-        exit 1
-    fi
-
-    if [[ "$OVERLORD_INIT_MODULES" != *" $module "* ]]
-    then
-        msg_debug "Adding module $module to INIT_MODULES"
-        OVERLORD_INIT_MODULES="$OVERLORD_INIT_MODULES $module "
-    else
-        msg_debug "Already added module $module to INIT_MODULES, ignoring"
-    fi
-}
-
 init_cli()
 {
     while true

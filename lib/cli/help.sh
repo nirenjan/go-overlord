@@ -17,12 +17,40 @@ Options:
     --manual            Display the manual page and exit
 
 Supported commands:
-    journal             Journal entries
-    note                Notes
-    remind              Reminders
+    init                Initialize the overlord database
+    help                Show help for the given commands
+EOM
 
-Type 'overlord <command> --help' for more details on a specific command
+for module in $OVERLORD_DEFAULT_MODULES
+do
+    ${module}_help_summary
+done
+
+cat <<-EOM
+
+Type 'overlord help <command>' for more details on a specific command
 
 EOM
 }
 
+# Process the help command
+# Usage: overlord help <module>
+help_cli()
+{
+    local module=$1
+
+    msg_debug "help_cli parameters: $@"
+    if [[ -z $module ]]
+    then
+        warn_emerg "fatal: Must specify module for help"
+        exit 1
+    fi
+
+    if module_registered $module
+    then
+        ${module}_cli --help
+    else
+        warn_emerg "fatal: unrecognized module $module"
+        exit 1
+    fi
+}
