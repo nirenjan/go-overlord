@@ -48,7 +48,7 @@ help_cli()
 
     if module_registered $module
     then
-        ${module}_cli --help
+        ${module}_help
     else
         warn_emerg "fatal: unrecognized module $module"
         exit 1
