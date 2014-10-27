@@ -34,7 +34,7 @@ require config  # Configuration information
 require init    # Intialization info - this should be before other modules
 
 # TODO: Uncomment these once the corresponding module is created
-# require journal
+require journal # Journal processing
 # require notes
 # require remind
 
