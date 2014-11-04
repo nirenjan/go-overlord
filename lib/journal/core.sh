@@ -195,7 +195,7 @@ journal_show()
     journal_check_name
 
     git log $OVERLORD_JOURNAL_REF/$OVERLORD_JOURNAL_NAME \
-        --since="1 +0000" \
+        --since='1970-01-01 00:00:01 +0000' \
         --reverse \
         --format="%C(bold yellow)Date:%x09%ad%Creset%n%n%B"
 }
