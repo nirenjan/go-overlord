@@ -184,7 +184,18 @@ journal_log()
 EOM
     $EDITOR COMMIT_EDITMSG
 
-    local commit_id=$(sed '/^#/d' COMMIT_EDITMSG |
+    # Remove comment lines from the log
+    sed -i '/^#/d' COMMIT_EDITMSG
+
+    local line_count=$(wc -l COMMIT_EDITMSG | awk '{ print $1 }')
+    if [[ $line_count == 0 ]]
+    then
+        warn_emerg "fatal: cannot add an empty entry to the journal"
+        exit 1
+    fi
+
+    journal_reset_params
+    local commit_id=$(cat COMMIT_EDITMSG |
         git commit-tree `journal_empty_tree` -p refs/heads/journal)
 
     git update-ref refs/heads/journal $commit_id
