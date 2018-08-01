@@ -2,7 +2,7 @@
 # Overlord master
 
 # Find out what folder Overlord is stored in
-OVERLORD_DIR=$(dirname $0)
+OVERLORD_DIR=$(dirname $(readlink -m $0))
 
 if [[ -z $OVERLORD_DIR ]]
 then
