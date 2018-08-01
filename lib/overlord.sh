@@ -29,6 +29,7 @@ require()
 require logging # Logging APIs - all of them print to STDOUT/STDERR, so no real
                 # "logging" per se
 require version # Version information
+require git     # Git wrapper APIs
 
 require config  # Configuration information
 require init    # Intialization info - this should be before other modules

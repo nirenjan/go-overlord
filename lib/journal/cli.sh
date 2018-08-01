@@ -1,4 +1,4 @@
-# Journal CLI processing
+# Log CLI processing
 
 journal_help_summary()
 {
@@ -12,27 +12,26 @@ journal_help()
 cat <<-EOM
 Usage: overlord journal <subcommand>
 
-The Overlord Journal allows you to keep an activity log (or several),
-that are automatically saved with the current timestamp. The journal
-log command will always log to the current active journal.
+The Overlord Journal Log allows you to keep an activity log. Entries are
+automatically saved with the current timestamp, and you may add optional
+tags to each entry to allow for filtering in the future. Tags may
+contain the characters a-z, 0-9 and hyphen (-).
+
 
 Sub-commands:
-    new <name>          Create a new journal
+    new [tags]          Log a new entry with optional tags
 
-    switch <name>       Switch to the specified journal
+    list [tags]         List all entries. If tags are specified, then
+                        display only the entries with those tags.
 
-    delete <name>       Delete the specified journal
+    delete <entry>      Delete the entry by the given <entry> ID.
 
-    active              Display the name of the current journal
+    show <entry>        Display the entry by the given <entry> ID.
 
-    list                Display all the journals. Currently active
-                        journal is marked with a *
+    tags                Display all the tags currently in the log
 
-    show [name]         Display the specified journal. If the journal
-                        is not specified, then display the active
-                        journal
-
-    log                 Log a new entry into the current active journal
+    display [tags]      Display the full log. If tags are specified,
+                        then display only the entries with those tags
 
 EOM
 }
@@ -53,69 +52,27 @@ journal_cli()
         shift
 
         case $cmd in
-        new)
-            if [[ -z $1 ]]
-            then
-                warn_emerg "fatal: must specify journal name"
-                exit 1
-            fi
-            journal_new $1
-            shift
+        new|list|display)
+            msg_debug "Running journal_${cmd} $@"
+            journal_${cmd} "$@"
             ;;
 
-        switch)
-            if [[ -z $1 ]]
-            then
-                warn_emerg "fatal: must specify journal name"
-                exit 1
-            fi
-            journal_switch $1
-            shift
+        tags)
+            journal_${cmd}
             ;;
 
         delete)
-            if [[ -z $1 ]]
+            if [[ -z "$1" ]]
             then
-                warn_emerg "fatal: must specify journal name"
+                warn_emerg "fatal: must specify log entry"
                 exit 1
             fi
-            journal_delete $1
-            shift
-            ;;
-
-        show)
-            if [[ ! -z $1 ]]
-            then
-                msg_debug "Displaying journal $1"
-                OVERLORD_JOURNAL_NAME=$1
-                journal_populate_list
-                if ! journal_exists
-                then
-                    warn_emerg "fatal: non-existant journal $1"
-                    exit 1
-                fi
-                shift
-            else
-                msg_debug "Displaying active journal $1"
-                OVERLORD_JOURNAL_NAME=$(journal_get_current)
-            fi
-            journal_show
-            ;;
-
-        active)
-            journal_active
-            ;;
-
-        list)
-            journal_list
-            ;;
-
-        log)
-            journal_log
+            journal_${cmd} "$@"
             ;;
 
         *)
             warn_emerg "fatal: unrecognized subcommand '$cmd'"
+            exit 1
         esac
     fi
 
@@ -123,18 +80,3 @@ journal_cli()
     exit 0
 }
 
-journal_list()
-{
-    journal_populate_list
-
-    local current=$(journal_get_current)
-    for journal in $OVERLORD_JOURNAL_LIST
-    do
-        if [[ "$journal" == "$current" ]]
-        then
-            echo "* $journal"
-        else
-            echo "  $journal"
-        fi
-    done
-}
