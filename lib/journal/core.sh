@@ -38,6 +38,12 @@ journal_process_date_path()
     echo "$OVERLORD_JOURNAL_DIR/$yyyy/$mm/$dd/${hhmm}.log"
 }
 
+# Find all entries and execute the actions on them
+journal_find_all_entries()
+{
+    find "$OVERLORD_JOURNAL_DIR" -name '*.log' "$@"
+}
+
 # Get the title for the journal entry
 journal_get_title()
 {
@@ -137,7 +143,7 @@ journal_update_tags()
 
     # Find all log files and grep for the @Tags entry
     # Use the output to build a list of all tags
-    find "$OVERLORD_JOURNAL_DIR" -name '*.log' -exec grep '^@Tags' {} \; |\
+    journal_find_all_entries -exec grep '^@Tags' {} \; |\
         sed 's/^@Tags\s*//' | sed 's/\s\+/\n/g' | sort -u |\
         sed '/^$/d' > "$tag_list"
 
@@ -165,6 +171,170 @@ journal_init()
     git add "$OVERLORD_JOURNAL_TAGS_FILE"
     git_set_commit_params
     git_save_files "log: init"
+}
+
+# Get the tags for an entry
+journal_get_entry_tags()
+{
+    local entry="$1"
+
+    sed -n 's/^@Tags\t//p' "$entry" | sed 's/\s\+/\n/g' | sort -u
+}
+
+# Get the ID for an entry
+journal_get_entry_id()
+{
+    local entry="$1"
+    sed -n 's/^@ID\t//p' "$entry"
+}
+
+# Get the title for an entry
+journal_get_entry_title()
+{
+    local entry="$1"
+    sed -n 's/^@Title\t//p' "$entry"
+}
+
+# Get the date for an entry
+journal_get_entry_date()
+{
+    local entry="$1"
+    sed -n 's/^@Date\t//p' "$entry"
+}
+
+# Process an entry by path, and return it if it has any of the tags specified
+journal_filter_tags()
+{
+    local entry=$1
+    local requested_tags=$2
+
+    # Check for any common lines
+    local common_tags=$(comm -1 -2 <(journal_get_entry_tags "$entry") \
+                        "$requested_tags" | wc -l)
+
+    if [[ $common_tags > 0 ]]
+    then
+        echo "$entry"
+    fi
+}
+
+journal_setup_requested_tags()
+{
+    local requested_tags=$(mktemp)
+
+    journal_process_tag_list "$@" | sed 's/\s\+/\n/g' |\
+    sort -u > "$requested_tags"
+
+    echo "$requested_tags"
+}
+
+journal_release_requested_tags()
+{
+    rm -f "$1"
+}
+
+journal_display_horizontal_line()
+{
+    printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+}
+
+journal_display_list_entry()
+{
+    local entry="$1"
+
+    local id=$(journal_get_entry_id "$entry")
+    local title=$(journal_get_entry_title "$entry")
+    local date=$(journal_get_entry_date "$entry")
+    date=${date%%T*}
+
+    printf '%-12s%-12s%s\n' "$id" "$date" "$title"
+}
+
+journal_display_entry()
+{
+    local entry="$1"
+    local date=$(journal_get_entry_date "$entry")
+    local title=$(journal_get_entry_title "$entry")
+    local tags=$(journal_get_entry_tags "$entry")
+    
+    echo -en '\e[33m' # Yellow text
+    date --date="$date" # Print the date in the local format
+    echo -en '\e[m' # Reset 
+    
+    echo -en '\e[1m' # Bold
+    echo "$title"
+    echo -en '\e[m' # Reset 
+    echo -en '\e[1m' # Bold
+    echo "$title" | sed 's/./=/g'
+    echo -en '\e[m' # Reset 
+
+    sed '/^@[A-Za-z]\+\t/d;1d' "$entry"
+
+    if [[ -n "$tags" ]]
+    then
+        echo -e '\e[1mTags:\e[m\t\e[031m'$tags'\e[m'
+    fi
+
+    journal_display_horizontal_line
+}
+
+journal_list_or_display()
+{
+    local action="$1"
+    shift
+
+    local requested_tags=
+    if [[ $# > 0 ]]
+    then
+        requested_tags=$(journal_setup_requested_tags "$@")
+    fi
+
+    journal_find_all_entries | sort | \
+    while read entry
+    do
+        local filtered_entry=
+        if [[ -n "$requested_tags" ]]
+        then
+            filtered_entry=$(journal_filter_tags "$entry" "$requested_tags")
+        else
+            filtered_entry="$entry"
+        fi
+
+        if [[ -n "$filtered_entry" ]]
+        then
+            if [[ "$action" == list ]]
+            then
+                journal_display_list_entry "$entry"
+            elif [[ "$action" == display ]]
+            then
+                journal_display_entry "$entry"
+            fi
+        fi
+    done
+
+    journal_release_requested_tags "$requested_tags"
+}
+
+# Display list of journal entries
+journal_list()
+{
+    # Print header
+    printf '%-12s%-12s%s\n' ID Date Title
+    journal_display_horizontal_line
+
+    journal_list_or_display list "$@"
+}
+
+# Display journal entries
+journal_display()
+{
+    journal_list_or_display display "$@" | less -FRX
+}
+
+# Display all tags
+journal_tags()
+{
+    cat "$OVERLORD_JOURNAL_TAGS_FILE"
 }
 
 journal_show()

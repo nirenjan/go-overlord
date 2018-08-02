@@ -57,14 +57,18 @@ journal_cli()
             journal_${cmd} "$@"
             ;;
 
-        show|list|display|tags|delete)
+        list|display)
+            journal_${cmd} "$@"
+            ;;
+
+        show|delete)
             overlord_not_implemented journal $cmd
             ;;
 
-        # tags)
-        #     journal_${cmd}
-        #     ;;
-        #
+        tags)
+            journal_${cmd}
+            ;;
+
         # show|delete)
         #     if [[ -z "$1" ]]
         #     then
