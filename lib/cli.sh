@@ -22,7 +22,7 @@ for arg in "${OVERLORD_ARGV[@]}"; do
         exit 0
         ;;
 
-    --verbose=?)
+    --verbose=*)
         overlord_parse_verbose $arg
         ;;
 

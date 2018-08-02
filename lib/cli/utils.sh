@@ -12,7 +12,7 @@ overlord_parse_verbose()
 {
     local verbose=${1/--verbose=/}
 
-    if grep -q "^[0-7]$" <<< $verbose
+    if printf '%s\n' "$verbose" | grep -q "^[0-7]$"
     then
         OVERLORD_LOGLEVEL=$verbose
         msg_debug "Setting verbose level to '$verbose'"
