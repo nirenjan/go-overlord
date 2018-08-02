@@ -5,7 +5,7 @@ a journal, set reminders and more.
 
 ## Requirements
 
-Overlord requires Git 1.7.3 or later and Bash 4 or later.
+Overlord requires Git 1.7.3 or later and Bash 3 or later.
 
 ## Usage
 
