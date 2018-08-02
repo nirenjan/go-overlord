@@ -3,9 +3,18 @@
 # It will not change an existing Overlord installation.
 
 # Check for existing installation
-check_overlord_installed()
+check_overlord_initialized()
 {
     [[ -d $OVERLORD_DATA && -f $OVERLORD_CONFIG ]]
+}
+
+assert_overlord_initialized()
+{
+    if ! check_overlord_initialized
+    then
+        warn_emerg "fatal: overlord not initialized" "run 'overlord init'"
+        exit 1
+    fi
 }
 
 # Create the overlord database
@@ -65,7 +74,7 @@ init_validate_and_add_module()
 
 overlord_init()
 {
-    if check_overlord_installed
+    if check_overlord_initialized
     then
         if [[ -z $OVERLORD_FORCE_INSTALL ]]
         then

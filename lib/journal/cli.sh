@@ -42,6 +42,7 @@ journal_cli()
         exit 0
     fi
 
+    assert_overlord_initialized
     cd $OVERLORD_DATA
 
     if (( $# > 0 ))
@@ -50,23 +51,28 @@ journal_cli()
         shift
 
         case $cmd in
-        new|list|display)
+        # new|list|display)
+        new)
             msg_debug "Running journal_${cmd} $@"
             journal_${cmd} "$@"
             ;;
 
-        tags)
-            journal_${cmd}
+        show|list|display|tags|delete)
+            overlord_not_implemented journal $cmd
             ;;
 
-        delete)
-            if [[ -z "$1" ]]
-            then
-                warn_emerg "fatal: must specify log entry"
-                exit 1
-            fi
-            journal_${cmd} "$@"
-            ;;
+        # tags)
+        #     journal_${cmd}
+        #     ;;
+        #
+        # show|delete)
+        #     if [[ -z "$1" ]]
+        #     then
+        #         warn_emerg "fatal: must specify log entry"
+        #         exit 1
+        #     fi
+        #     journal_${cmd} "$@"
+        #     ;;
 
         *)
             warn_emerg "fatal: unrecognized subcommand '$cmd'"

@@ -3,7 +3,7 @@
 # Handle a not-implemented option
 overlord_not_implemented()
 {
-    warn_emerg "fatal: '$@' not implemented"
+    warn_emerg "fatal: '$(echo $@ | xargs)' not implemented"
     exit 1
 }
 
