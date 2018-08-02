@@ -256,17 +256,17 @@ journal_display_entry()
     local date=$(journal_get_entry_date "$entry")
     local title=$(journal_get_entry_title "$entry")
     local tags=$(journal_get_entry_tags "$entry")
-    
+
     echo -en '\e[33m' # Yellow text
     date --date="$date" # Print the date in the local format
-    echo -en '\e[m' # Reset 
-    
+    echo -en '\e[m' # Reset
+
     echo -en '\e[1m' # Bold
     echo "$title"
-    echo -en '\e[m' # Reset 
+    echo -en '\e[m' # Reset
     echo -en '\e[1m' # Bold
     echo "$title" | sed 's/./=/g'
-    echo -en '\e[m' # Reset 
+    echo -en '\e[m' # Reset
 
     sed '/^@[A-Za-z]\+\t/d;1d' "$entry"
 
@@ -337,43 +337,67 @@ journal_tags()
     cat "$OVERLORD_JOURNAL_TAGS_FILE"
 }
 
+# Show an entry
+journal_show_or_delete()
+{
+    local action="$1"
+    local entry_id="$2"
+    if [[ -z "$entry_id" ]]
+    then
+        warn_emerg "fatal: must specify log entry to $action"
+        exit 1
+    fi
+
+    journal_find_all_entries | while read entry
+    do
+        local id=$(journal_get_entry_id "$entry")
+        if [[ "$id" == "$entry_id" ]]
+        then
+            if [[ $action == show ]]
+            then
+                journal_display_entry "$entry"
+            elif [[ $action == delete ]]
+            then
+                journal_delete_entry "$entry" "$entry_id"
+            fi
+
+            # This while loop runs within a subshell.
+            # Normally, it would exit with a success code, but
+            # we need a way to tell the parent that we have found
+            # the valid entry, and a failure code would do that.
+            # If we didn't find the entry, then it would exit with
+            # a success code and trigger the warning in the parent
+            exit 1
+        fi
+    done && {
+        warn_emerg "fatal: Unable to find entry with ID $entry_id"
+        exit 1
+    }
+}
+
 journal_show()
 {
-    journal_check_name
-
-    git journal $OVERLORD_JOURNAL_REF/$OVERLORD_JOURNAL_NAME \
-        --since='1970-01-01 00:00:01 +0000' \
-        --reverse \
-        --format="%C(bold yellow)Date:%x09%ad%Creset%n%n%B"
+    journal_show_or_delete show "$@"
 }
 
 journal_delete()
 {
-    OVERLORD_JOURNAL_NAME=$1
+    journal_show_or_delete delete "$@"
+}
 
-    journal_populate_list
-    if ! journal_exists
-    then
-        warn_emerg "fatal: cannot delete a non-existant journal"
-        exit 1
-    fi
+journal_delete_entry()
+{
+    local entry="$1"
+    local title=$(journal_get_entry_title "$@")
+    local id="$2"
 
-    if [[ $(journal_get_current) == $OVERLORD_JOURNAL_NAME ]]
-    then
-        warn_emerg "fatal: cannot delete currently active journal"
-        exit 1
-    fi
+    msg_debug "Deleting journal entry id $id title '$title'"
+    cd "$OVERLORD_JOURNAL_DIR"
+    git rm -f "${entry#$OVERLORD_JOURNAL_DIR/}" &>/dev/null
+    git_set_commit_params
+    git_save_files "log: delete-entry '$title'"
 
-    warn_emerg "This operation cannot be undone!"
-    read -n1 -p "Continue? [y/N] " OVERLORD_JOURNAL_DELETE
-    echo
+    journal_update_tags
 
-    OVERLORD_JOURNAL_DELETE=$(tr 'A-Z' 'a-z' <<< $OVERLORD_JOURNAL_DELETE)
-    if [[ $OVERLORD_JOURNAL_DELETE == 'y' ]]
-    then
-        msg_debug "Deleting journal $OVERLORD_JOURNAL_NAME"
-        git update-ref -d $OVERLORD_JOURNAL_REF/$OVERLORD_JOURNAL_NAME
-        warn_emerg "deleted journal $OVERLORD_JOURNAL_NAME"
-    fi
-
+    warn_emerg "deleted journal entry '$title'"
 }

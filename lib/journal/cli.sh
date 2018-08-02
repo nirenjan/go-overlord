@@ -51,32 +51,14 @@ journal_cli()
         shift
 
         case $cmd in
-        # new|list|display)
-        new)
+        new|list|display|show|delete)
             msg_debug "Running journal_${cmd} $@"
             journal_${cmd} "$@"
-            ;;
-
-        list|display)
-            journal_${cmd} "$@"
-            ;;
-
-        show|delete)
-            overlord_not_implemented journal $cmd
             ;;
 
         tags)
             journal_${cmd}
             ;;
-
-        # show|delete)
-        #     if [[ -z "$1" ]]
-        #     then
-        #         warn_emerg "fatal: must specify log entry"
-        #         exit 1
-        #     fi
-        #     journal_${cmd} "$@"
-        #     ;;
 
         *)
             warn_emerg "fatal: unrecognized subcommand '$cmd'"
