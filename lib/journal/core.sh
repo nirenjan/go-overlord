@@ -151,6 +151,18 @@ journal_update_tags()
     rm -f "$tag_list"
 }
 
+# Initialize the journal module
+journal_init()
+{
+    # Create the journal folder and the empty tags file
+    mkdir -p "$OVERLORD_JOURNAL_DIR"
+    touch "$OVERLORD_JOURNAL_TAGS_FILE"
+
+    git add "$OVERLORD_JOURNAL_TAGS_FILE"
+    git_set_commit_params
+    git_save_files "log: init"
+}
+
 journal_show()
 {
     journal_check_name
