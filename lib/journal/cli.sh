@@ -2,9 +2,7 @@
 
 journal_help_summary()
 {
-cat <<-EOM
-    journal             Journal logging
-EOM
+    echo "Journal logging"
 }
 
 journal_help()

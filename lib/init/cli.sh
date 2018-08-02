@@ -3,7 +3,12 @@
 OVERLORD_INIT_MODULES=''
 OVERLORD_DEFAULT_MODULES=''
 
-init_cli_help()
+init_help_summary()
+{
+    echo "Initialize the overlord database"
+}
+
+init_help()
 {
 cat <<EOM
 Usage: overlord init [options]
@@ -31,7 +36,7 @@ Options:
     -h, --help          Display this help message
 
 Available modules:
-    ${OVERLORD_DEFAULT_MODULES}
+    $(echo $OVERLORD_DEFAULT_MODULES | sed 's/init *//')
 EOM
 }
 
@@ -49,7 +54,7 @@ init_cli()
 
         case $cmd in
         -h|--help)
-            init_cli_help
+            help_cli init
             exit 0
             ;;
 
@@ -91,4 +96,10 @@ init_cli()
     msg_debug "Calling initialization routines"
     overlord_init
     exit 0
+}
+
+init_init()
+{
+    # Nothing to do to initialize init
+    :
 }

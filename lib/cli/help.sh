@@ -17,12 +17,12 @@ Options:
     --manual            Display the manual page and exit
 
 Supported commands:
-    init                Initialize the overlord database
     help                Show help for the given commands
 EOM
 
 for module in $OVERLORD_DEFAULT_MODULES
 do
+    printf "    %-20s" $module
     ${module}_help_summary
 done
 

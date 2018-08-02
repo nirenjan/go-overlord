@@ -77,10 +77,6 @@ msg_debug "OVERLORD_COMMAND is $OVERLORD_COMMAND"
 msg_debug "Argument index is now $OVERLORD_ARG_INDEX"
 
 case $OVERLORD_COMMAND in
-init)
-    init_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
-    ;;
-
 help)
     # Calls module --help
     help_cli "${OVERLORD_ARGV[@]:$OVERLORD_ARG_INDEX}"
