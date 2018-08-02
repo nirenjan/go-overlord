@@ -31,6 +31,10 @@ for arg in "${OVERLORD_ARGV[@]}"; do
         exit 0
         ;;
 
+    --manual)
+        overlord_not_implemented $arg
+        ;;
+
     --)
         msg_debug "Options terminated"
         # Empty option terminates option processing

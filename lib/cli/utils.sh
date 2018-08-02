@@ -1,5 +1,12 @@
 # CLI utilities
 
+# Handle a not-implemented option
+overlord_not_implemented()
+{
+    warn_emerg "fatal: '$@' not implemented"
+    exit 1
+}
+
 # Parse verbosity level
 overlord_parse_verbose()
 {
