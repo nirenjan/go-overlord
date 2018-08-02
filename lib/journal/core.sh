@@ -98,6 +98,9 @@ EOM
     cp COMMIT_EDITMSG "$journal_path"
     cd ..
 
+    # Add spacer line for extra elements
+    echo >> "$journal_path"
+
     # Add date element
     echo -e "@Date\t$date" >> "$journal_path"
 
@@ -135,7 +138,8 @@ journal_update_tags()
     # Find all log files and grep for the @Tags entry
     # Use the output to build a list of all tags
     find "$OVERLORD_JOURNAL_DIR" -name '*.log' -exec grep '^@Tags' {} \; |\
-        sed 's/^@Tags\s*//' | sed 's/\s\+/\n/g' | sort | sed '/^$/d' > "$tag_list"
+        sed 's/^@Tags\s*//' | sed 's/\s\+/\n/g' | sort -u |\
+        sed '/^$/d' > "$tag_list"
 
     if [[ -e "$OVERLORD_JOURNAL_TAGS_FILE" ]]
     then
