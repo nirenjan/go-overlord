@@ -14,7 +14,7 @@ journal_process_tag()
 # Process tag list - process each tag and return a space separated list
 journal_process_tag_list()
 {
-    local tag_list= 
+    local tag_list=
     for tag in "$@"
     do
         tag_list="$tag_list $(journal_process_tag $tag)"
@@ -26,7 +26,7 @@ journal_process_tag_list()
 # journal file
 journal_process_date_path()
 {
-    local yyyy=${1%%-*} 
+    local yyyy=${1%%-*}
     local rest=${1#*-}
     local mm=${rest%%-*}
     rest=${rest#*-}
@@ -35,7 +35,7 @@ journal_process_date_path()
     local hhmm=${rest%:*}
     hhmm=${hhmm/:/}
 
-    echo "$OVERLORD_JOURNAL_DIR/$yyyy/$mm/$dd/${hhmm}.journal"
+    echo "$OVERLORD_JOURNAL_DIR/$yyyy/$mm/$dd/${hhmm}.log"
 }
 
 # Get the title for the journal entry
