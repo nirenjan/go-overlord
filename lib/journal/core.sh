@@ -121,15 +121,22 @@ EOM
 
     # Add ID element
     # NOTE: This must be the last element
-    local id=$(md5sum "$journal_path" | head -c10)
-    echo -e "@ID\t$id" >> $journal_path
+    _journal_set_entry_id "$journal_path"
 
     # Save the new entry in the log
-    msg_debug "Current path $PWD"
+    _journal_entry_save "$journal_path" "$date" "$title"
+}
+
+_journal_entry_save()
+{
+    local journal_path="$1"
+    local date="$2"
+    local title="$3"
+
     git add "$journal_path"
     journal_db_add_entry "$journal_path"
     git_set_commit_params "$date"
-    git_save_files "log: add-entry '$title'"
+    git_save_files "journal: add-entry '$title'"
 }
 
 # Initialize the journal module
@@ -140,7 +147,7 @@ journal_init()
     journal_db_init
 
     git_set_commit_params
-    git_save_files "log: init"
+    git_save_files "journal: init"
 }
 
 # Get the tags for an entry
@@ -149,6 +156,14 @@ _journal_get_entry_tags()
     local entry="$1"
 
     sed -n 's/^@Tags\t//p' "$entry" | sed 's/\s\+/\n/g' | sort -u
+}
+
+# Set the ID for an entry
+_journal_set_entry_id()
+{
+    local journal_path="$1"
+    local id=$(md5sum "$journal_path" | head -c10)
+    echo -e "@ID\t$id" >> $journal_path
 }
 
 # Get the ID for an entry
@@ -331,11 +346,11 @@ journal_export()
     journal_db_list_filter | while read db_entry
     do
         local entry_path=$(journal_db_get_entry_path "$db_entry")
-        local entry_date=$(_journal_get_entry_date "$entry_path" | tr T: --)
+        local dest_path=$(_journal_get_entry_date "$entry_path" | tr T: --)
 
         # Create a copy in the temporary directory, but delete
         # the @ID element
-        sed '/^@ID\t/d' "$entry_path" > "${journal_backup}/${entry_date}"
+        sed '/^@ID\t/d' "$entry_path" > "${journal_backup}/${dest_path}"
     done
 
     # Create a tar file of the journal backup
@@ -344,3 +359,26 @@ journal_export()
     rm -rf "$journal_backup"
 }
 
+journal_import()
+{
+    local journal_backup=$(mktemp -d)
+
+    # Extract the contents to a temporary folder
+    tar xf "$1" -C "$journal_backup"
+
+    cd "$OVERLORD_JOURNAL_DIR"
+    find "$journal_backup" -type f | sort | while read file
+    do
+        local journal_date=$(_journal_get_entry_date "$file")
+        local journal_path=$(_journal_process_date_path "$journal_date")
+        local title=$(_journal_get_entry_title "$file")
+
+        mkdir -p $(dirname "$journal_path")
+        cp "$file" "$journal_path"
+        _journal_set_entry_id "$journal_path"
+
+        _journal_entry_save "$journal_path" "$journal_date" "$title"
+    done
+
+    rm -rf "$journal_backup"
+}
