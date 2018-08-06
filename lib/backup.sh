@@ -34,14 +34,17 @@ backup_import()
 
     find ${import_dir} -type f | while read file 
     do
+        local module=$(basename "$file")
         # Ensure that the file import function exists
-        if type -t ${file}_import >/dev/null
+        if type -t ${module}_import >/dev/null
         then
             msg_notice "Importing $file"
-            if ! ${file}_import $file
+            if ! ${module}_import $file
             then
-                warn_err "$file import failed. Skipping..."
+                warn_err "$module import failed. Skipping..."
             fi
+        else
+            warn_err "$module import not supported. Skipping..."
         fi
     done
 
