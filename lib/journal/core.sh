@@ -320,3 +320,27 @@ _journal_delete_entry()
         echo "Journal entry '$title' not deleted"
     fi
 }
+
+#######################################################################
+# Journal export & import functionality
+#######################################################################
+journal_export()
+{
+    local journal_backup=$(mktemp -d)
+
+    journal_db_list_filter | while read db_entry
+    do
+        local entry_path=$(journal_db_get_entry_path "$db_entry")
+        local entry_date=$(_journal_get_entry_date "$entry_path" | tr T: --)
+
+        # Create a copy in the temporary directory, but delete
+        # the @ID element
+        sed '/^@ID\t/d' "$entry_path" > "${journal_backup}/${entry_date}"
+    done
+
+    # Create a tar file of the journal backup
+    tar -cf "$1" -C "$journal_backup" .
+
+    rm -rf "$journal_backup"
+}
+
