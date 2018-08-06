@@ -19,7 +19,7 @@ OVERLORD_ARGC=$#
 OVERLORD_ARGV=("$@")
 
 # Make sure we haven't been linked to a different folder
-if [[ ! -e $OVERLORD_DIR/lib/overlord.sh ]]
+if [[ ! -e $OVERLORD_DIR/lib/overlord.bash ]]
 then
     echo "overlord: fatal: cannot find overlord library in $OVERLORD_DIR" >&2
     echo "overlord: Your installation is corrupt!" >&2
@@ -27,6 +27,6 @@ then
 fi
 
 # Load the Overlord library
-source $OVERLORD_DIR/lib/overlord.sh
+source $OVERLORD_DIR/lib/overlord.bash
 
 msg_debug "Overlord is in $OVERLORD_DIR"

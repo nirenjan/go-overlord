@@ -7,7 +7,7 @@ OVERLORD_SOURCE=''
 require()
 {
     local fn=$1
-    local file=$OVERLORD_DIR/lib/$fn.sh
+    local file=$OVERLORD_DIR/lib/$fn.bash
 
     if [[ ! -e $file ]]
     then
