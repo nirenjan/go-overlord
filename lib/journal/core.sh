@@ -6,25 +6,25 @@ OVERLORD_JOURNAL_DIR="$OVERLORD_DATA/journal"
 OVERLORD_JOURNAL_TAGS_FILE="${OVERLORD_JOURNAL_DIR}/tags"
 
 # Process tag by deleting everything but a-z, 0-9 and -
-journal_process_tag()
+_journal_process_tag()
 {
     echo $1 | tr -cd '[a-z0-9-]'
 }
 
 # Process tag list - process each tag and return a space separated list
-journal_process_tag_list()
+_journal_process_tag_list()
 {
     local tag_list=
     for tag in "$@"
     do
-        tag_list="$tag_list $(journal_process_tag $tag)"
+        tag_list="$tag_list $(_journal_process_tag $tag)"
     done
     echo $tag_list
 }
 
 # Take a date in ISO 8601 format and return a path for the corresponding
 # journal file
-journal_process_date_path()
+_journal_process_date_path()
 {
     local yyyy=${1%%-*}
     local rest=${1#*-}
@@ -39,13 +39,13 @@ journal_process_date_path()
 }
 
 # Find all entries and execute the actions on them
-journal_find_all_entries()
+_journal_find_all_entries()
 {
     find "$OVERLORD_JOURNAL_DIR" -name '*.log' "$@"
 }
 
 # Get the title for the journal entry
-journal_get_title()
+_journal_get_title()
 {
     local journal_path="$1"
 
@@ -56,9 +56,9 @@ journal_get_title()
 # Create a new journal entry
 journal_new()
 {
-    local tag_list=$(journal_process_tag_list "$@")
+    local tag_list=$(_journal_process_tag_list "$@")
     local date=$(date -Isec)
-    local journal_path=$(journal_process_date_path "$date")
+    local journal_path=$(_journal_process_date_path "$date")
 
     # Use EDITOR in preference to gitconfig core.editor in preference to vim
     [[ -z $EDITOR ]] && EDITOR=$(git config core.editor)
@@ -117,7 +117,7 @@ EOM
     fi
 
     # Add title
-    local title=$(journal_get_title "$journal_path")
+    local title=$(_journal_get_title "$journal_path")
     echo -e "@Title\t$title" >> "$journal_path"
 
     # Add ID element
@@ -131,11 +131,11 @@ EOM
     git_set_commit_params "$date"
     git_save_files "log: add-entry '$title'"
 
-    journal_update_tags
+    _journal_update_tags
 }
 
 # Save the tags into a new tag list
-journal_update_tags()
+_journal_update_tags()
 {
     local tag_list=$(mktemp)
 
@@ -143,7 +143,7 @@ journal_update_tags()
 
     # Find all log files and grep for the @Tags entry
     # Use the output to build a list of all tags
-    journal_find_all_entries -exec grep '^@Tags' {} \; |\
+    _journal_find_all_entries -exec grep '^@Tags' {} \; |\
         sed 's/^@Tags\s*//' | sed 's/\s\+/\n/g' | sort -u |\
         sed '/^$/d' > "$tag_list"
 
@@ -174,7 +174,7 @@ journal_init()
 }
 
 # Get the tags for an entry
-journal_get_entry_tags()
+_journal_get_entry_tags()
 {
     local entry="$1"
 
@@ -182,34 +182,34 @@ journal_get_entry_tags()
 }
 
 # Get the ID for an entry
-journal_get_entry_id()
+_journal_get_entry_id()
 {
     local entry="$1"
     sed -n 's/^@ID\t//p' "$entry"
 }
 
 # Get the title for an entry
-journal_get_entry_title()
+_journal_get_entry_title()
 {
     local entry="$1"
     sed -n 's/^@Title\t//p' "$entry"
 }
 
 # Get the date for an entry
-journal_get_entry_date()
+_journal_get_entry_date()
 {
     local entry="$1"
     sed -n 's/^@Date\t//p' "$entry"
 }
 
 # Process an entry by path, and return it if it has any of the tags specified
-journal_filter_tags()
+_journal_filter_tags()
 {
     local entry=$1
     local requested_tags=$2
 
     # Check for any common lines
-    local common_tags=$(comm -1 -2 <(journal_get_entry_tags "$entry") \
+    local common_tags=$(comm -1 -2 <(_journal_get_entry_tags "$entry") \
                         "$requested_tags" | wc -l)
 
     if [[ $common_tags > 0 ]]
@@ -218,44 +218,44 @@ journal_filter_tags()
     fi
 }
 
-journal_setup_requested_tags()
+_journal_setup_requested_tags()
 {
     local requested_tags=$(mktemp)
 
-    journal_process_tag_list "$@" | sed 's/\s\+/\n/g' |\
+    _journal_process_tag_list "$@" | sed 's/\s\+/\n/g' |\
     sort -u > "$requested_tags"
 
     echo "$requested_tags"
 }
 
-journal_release_requested_tags()
+_journal_release_requested_tags()
 {
     rm -f "$1"
 }
 
-journal_display_horizontal_line()
+_journal_display_horizontal_line()
 {
     printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 }
 
-journal_display_list_entry()
+_journal_display_list_entry()
 {
     local entry="$1"
 
-    local id=$(journal_get_entry_id "$entry")
-    local title=$(journal_get_entry_title "$entry")
-    local date=$(journal_get_entry_date "$entry")
+    local id=$(_journal_get_entry_id "$entry")
+    local title=$(_journal_get_entry_title "$entry")
+    local date=$(_journal_get_entry_date "$entry")
     date=${date%%T*}
 
     printf '%-12s%-12s%s\n' "$id" "$date" "$title"
 }
 
-journal_display_entry()
+_journal_display_entry()
 {
     local entry="$1"
-    local date=$(journal_get_entry_date "$entry")
-    local title=$(journal_get_entry_title "$entry")
-    local tags=$(journal_get_entry_tags "$entry")
+    local date=$(_journal_get_entry_date "$entry")
+    local title=$(_journal_get_entry_title "$entry")
+    local tags=$(_journal_get_entry_tags "$entry")
 
     echo -en '\e[33m' # Yellow text
     date --date="$date" # Print the date in the local format
@@ -275,10 +275,10 @@ journal_display_entry()
         echo -e '\e[1mTags:\e[m\t\e[031m'$tags'\e[m'
     fi
 
-    journal_display_horizontal_line
+    _journal_display_horizontal_line
 }
 
-journal_list_or_display()
+_journal_list_or_display()
 {
     local action="$1"
     shift
@@ -286,16 +286,16 @@ journal_list_or_display()
     local requested_tags=
     if [[ $# > 0 ]]
     then
-        requested_tags=$(journal_setup_requested_tags "$@")
+        requested_tags=$(_journal_setup_requested_tags "$@")
     fi
 
-    journal_find_all_entries | sort | \
+    _journal_find_all_entries | sort | \
     while read entry
     do
         local filtered_entry=
         if [[ -n "$requested_tags" ]]
         then
-            filtered_entry=$(journal_filter_tags "$entry" "$requested_tags")
+            filtered_entry=$(_journal_filter_tags "$entry" "$requested_tags")
         else
             filtered_entry="$entry"
         fi
@@ -304,15 +304,15 @@ journal_list_or_display()
         then
             if [[ "$action" == list ]]
             then
-                journal_display_list_entry "$entry"
+                _journal_display_list_entry "$entry"
             elif [[ "$action" == display ]]
             then
-                journal_display_entry "$entry"
+                _journal_display_entry "$entry"
             fi
         fi
     done
 
-    journal_release_requested_tags "$requested_tags"
+    _journal_release_requested_tags "$requested_tags"
 }
 
 # Display list of journal entries
@@ -320,15 +320,15 @@ journal_list()
 {
     # Print header
     printf '%-12s%-12s%s\n' ID Date Title
-    journal_display_horizontal_line
+    _journal_display_horizontal_line
 
-    journal_list_or_display list "$@"
+    _journal_list_or_display list "$@"
 }
 
 # Display journal entries
 journal_display()
 {
-    journal_list_or_display display "$@" | less -FRX
+    _journal_list_or_display display "$@" | less -FRX
 }
 
 # Display all tags
@@ -338,7 +338,7 @@ journal_tags()
 }
 
 # Show an entry
-journal_show_or_delete()
+_journal_show_or_delete()
 {
     local action="$1"
     local entry_id="$2"
@@ -348,17 +348,17 @@ journal_show_or_delete()
         exit 1
     fi
 
-    journal_find_all_entries | while read entry
+    _journal_find_all_entries | while read entry
     do
-        local id=$(journal_get_entry_id "$entry")
+        local id=$(_journal_get_entry_id "$entry")
         if [[ "$id" == "$entry_id" ]]
         then
             if [[ $action == show ]]
             then
-                journal_display_entry "$entry"
+                _journal_display_entry "$entry"
             elif [[ $action == delete ]]
             then
-                journal_delete_entry "$entry" "$entry_id"
+                _journal_delete_entry "$entry" "$entry_id"
             fi
 
             # This while loop runs within a subshell.
@@ -377,18 +377,18 @@ journal_show_or_delete()
 
 journal_show()
 {
-    journal_show_or_delete show "$@"
+    _journal_show_or_delete show "$@"
 }
 
 journal_delete()
 {
-    journal_show_or_delete delete "$@"
+    _journal_show_or_delete delete "$@"
 }
 
-journal_delete_entry()
+_journal_delete_entry()
 {
     local entry="$1"
-    local title=$(journal_get_entry_title "$@")
+    local title=$(_journal_get_entry_title "$@")
     local id="$2"
 
     msg_debug "Deleting journal entry id $id title '$title'"
@@ -397,7 +397,7 @@ journal_delete_entry()
     git_set_commit_params
     git_save_files "log: delete-entry '$title'"
 
-    journal_update_tags
+    _journal_update_tags
 
     warn_emerg "deleted journal entry '$title'"
 }
