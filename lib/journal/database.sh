@@ -64,7 +64,7 @@ journal_db_get_entry_date()
 {
     local date=$(journal_db_get_entry_path "$@")
 
-    date=${date#$OVERLORD_JOURNAL_DIR}
+    date=${date#$OVERLORD_JOURNAL_DIR/}
     date=${date%/*.log}
     echo ${date//\//-}
 }
