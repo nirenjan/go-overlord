@@ -128,6 +128,7 @@ EOM
     # Save the new entry in the log
     msg_debug "Current path $PWD"
     git add "$journal_path"
+    journal_db_add_entry "$journal_path"
     git_set_commit_params "$date"
     git_save_files "log: add-entry '$title'"
 
@@ -218,21 +219,6 @@ _journal_filter_tags()
     fi
 }
 
-_journal_setup_requested_tags()
-{
-    local requested_tags=$(mktemp)
-
-    _journal_process_tag_list "$@" | sed 's/\s\+/\n/g' |\
-    sort -u > "$requested_tags"
-
-    echo "$requested_tags"
-}
-
-_journal_release_requested_tags()
-{
-    rm -f "$1"
-}
-
 _journal_display_horizontal_line()
 {
     printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
@@ -283,36 +269,18 @@ _journal_list_or_display()
     local action="$1"
     shift
 
-    local requested_tags=
-    if [[ $# > 0 ]]
-    then
-        requested_tags=$(_journal_setup_requested_tags "$@")
-    fi
-
-    _journal_find_all_entries | sort | \
+    journal_db_list_filter "$@" | \
     while read entry
     do
-        local filtered_entry=
-        if [[ -n "$requested_tags" ]]
+        local entry_path=$(journal_db_get_entry_path "$entry")
+        if [[ "$action" == list ]]
         then
-            filtered_entry=$(_journal_filter_tags "$entry" "$requested_tags")
-        else
-            filtered_entry="$entry"
-        fi
-
-        if [[ -n "$filtered_entry" ]]
+            _journal_display_list_entry "$entry_path"
+        elif [[ "$action" == display ]]
         then
-            if [[ "$action" == list ]]
-            then
-                _journal_display_list_entry "$entry"
-            elif [[ "$action" == display ]]
-            then
-                _journal_display_entry "$entry"
-            fi
+            _journal_display_entry "$entry_path"
         fi
     done
-
-    _journal_release_requested_tags "$requested_tags"
 }
 
 # Display list of journal entries
@@ -348,31 +316,21 @@ _journal_show_or_delete()
         exit 1
     fi
 
-    _journal_find_all_entries | while read entry
-    do
-        local id=$(_journal_get_entry_id "$entry")
-        if [[ "$id" == "$entry_id" ]]
+    local db_entry=$(journal_db_get_entry_by_id "$entry_id")
+    if [[ -n "$db_entry" ]]
+    then
+        local entry=$(journal_db_get_entry_path "$db_entry")
+        if [[ $action == show ]]
         then
-            if [[ $action == show ]]
-            then
-                _journal_display_entry "$entry"
-            elif [[ $action == delete ]]
-            then
-                _journal_delete_entry "$entry" "$entry_id"
-            fi
-
-            # This while loop runs within a subshell.
-            # Normally, it would exit with a success code, but
-            # we need a way to tell the parent that we have found
-            # the valid entry, and a failure code would do that.
-            # If we didn't find the entry, then it would exit with
-            # a success code and trigger the warning in the parent
-            exit 1
+            _journal_display_entry "$entry"
+        elif [[ $action == delete ]]
+        then
+            _journal_delete_entry "$db_entry"
         fi
-    done && {
+    else
         warn_emerg "fatal: Unable to find entry with ID $entry_id"
         exit 1
-    }
+    fi
 }
 
 journal_show()
@@ -387,17 +345,27 @@ journal_delete()
 
 _journal_delete_entry()
 {
-    local entry="$1"
-    local title=$(_journal_get_entry_title "$@")
-    local id="$2"
+    local id=$(journal_db_get_entry_id "$1")
+    local title=$(journal_db_get_entry_title "$1")
+    local entry=$(journal_db_get_entry_path "$1")
 
-    msg_debug "Deleting journal entry id $id title '$title'"
-    cd "$OVERLORD_JOURNAL_DIR"
-    git rm -f "${entry#$OVERLORD_JOURNAL_DIR/}" &>/dev/null
-    git_set_commit_params
-    git_save_files "log: delete-entry '$title'"
+    echo "Deleting journal entry id $id title '$title'"
+    echo -n "This operation cannot be undone. Continue? [y/N] "
+    read -n1
+    echo
 
-    _journal_update_tags
+    if [[ "$REPLY" == y || "$REPLY" == Y ]]
+    then
+        cd "$OVERLORD_JOURNAL_DIR"
+        git rm -f "${entry#$OVERLORD_JOURNAL_DIR/}" &>/dev/null
+        journal_db_delete_entry_by_id "$id"
+        git_set_commit_params
+        git_save_files "log: delete-entry '$title'"
 
-    warn_emerg "deleted journal entry '$title'"
+        _journal_update_tags
+
+        warn_emerg "deleted journal entry '$title'"
+    else
+        echo "Journal entry '$title' not deleted"
+    fi
 }
