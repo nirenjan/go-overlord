@@ -36,6 +36,7 @@ require init    # Intialization info - this should be before other modules
 
 # TODO: Uncomment these once the corresponding module is created
 require journal # Journal processing
+require backup  # Overlord backup
 # require notes
 # require remind
 
