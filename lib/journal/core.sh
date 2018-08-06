@@ -3,7 +3,6 @@
 # The journals are also saved in a Git repository
 
 OVERLORD_JOURNAL_DIR="$OVERLORD_DATA/journal"
-OVERLORD_JOURNAL_TAGS_FILE="${OVERLORD_JOURNAL_DIR}/tags"
 
 # Process tag by deleting everything but a-z, 0-9 and -
 _journal_process_tag()
@@ -131,45 +130,15 @@ EOM
     journal_db_add_entry "$journal_path"
     git_set_commit_params "$date"
     git_save_files "log: add-entry '$title'"
-
-    _journal_update_tags
-}
-
-# Save the tags into a new tag list
-_journal_update_tags()
-{
-    local tag_list=$(mktemp)
-
-    msg_debug "Using temporary tag list file $tag_list"
-
-    # Find all log files and grep for the @Tags entry
-    # Use the output to build a list of all tags
-    _journal_find_all_entries -exec grep '^@Tags' {} \; |\
-        sed 's/^@Tags\s*//' | sed 's/\s\+/\n/g' | sort -u |\
-        sed '/^$/d' > "$tag_list"
-
-    if [[ -e "$OVERLORD_JOURNAL_TAGS_FILE" ]]
-    then
-        if ! diff -q "$OVERLORD_JOURNAL_TAGS_FILE" "$tag_list" > /dev/null
-        then
-            cp "$tag_list" "$OVERLORD_JOURNAL_TAGS_FILE"
-            git add "$OVERLORD_JOURNAL_TAGS_FILE"
-            git_set_commit_params
-            git_save_files "log: update-tags"
-        fi
-    fi
-
-    rm -f "$tag_list"
 }
 
 # Initialize the journal module
 journal_init()
 {
-    # Create the journal folder and the empty tags file
+    # Create the journal folder and the empty database
     mkdir -p "$OVERLORD_JOURNAL_DIR"
-    touch "$OVERLORD_JOURNAL_TAGS_FILE"
+    journal_db_init
 
-    git add "$OVERLORD_JOURNAL_TAGS_FILE"
     git_set_commit_params
     git_save_files "log: init"
 }
@@ -201,22 +170,6 @@ _journal_get_entry_date()
 {
     local entry="$1"
     sed -n 's/^@Date\t//p' "$entry"
-}
-
-# Process an entry by path, and return it if it has any of the tags specified
-_journal_filter_tags()
-{
-    local entry=$1
-    local requested_tags=$2
-
-    # Check for any common lines
-    local common_tags=$(comm -1 -2 <(_journal_get_entry_tags "$entry") \
-                        "$requested_tags" | wc -l)
-
-    if [[ $common_tags > 0 ]]
-    then
-        echo "$entry"
-    fi
 }
 
 _journal_display_horizontal_line()
@@ -302,7 +255,7 @@ journal_display()
 # Display all tags
 journal_tags()
 {
-    cat "$OVERLORD_JOURNAL_TAGS_FILE"
+    journal_db_list_tags
 }
 
 # Show an entry
@@ -361,8 +314,6 @@ _journal_delete_entry()
         journal_db_delete_entry_by_id "$id"
         git_set_commit_params
         git_save_files "log: delete-entry '$title'"
-
-        _journal_update_tags
 
         warn_emerg "deleted journal entry '$title'"
     else

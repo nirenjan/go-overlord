@@ -85,8 +85,6 @@ journal_db_get_entry_title()
 # List entries, optionally filter by tags
 journal_db_list_filter()
 {
-    local cmd
-    local args
     if [[ "$#" > 0 ]]
     then
         awk -F: "\$3 ~ /$(echo "$@" | sed 's/\s\+/|/g')/" \
@@ -94,4 +92,10 @@ journal_db_list_filter()
     else
         cat "$OVERLORD_JOURNAL_DB_PATH"
     fi
+}
+
+# List all tags
+journal_db_list_tags()
+{
+    cut -d: -f3 "$OVERLORD_JOURNAL_DB_PATH" | sed 's/\s\+/\n/g' | sort -u
 }
