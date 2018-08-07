@@ -1,0 +1,32 @@
+#!/bin/bash
+# Overlord master
+
+# Find out what folder Overlord is stored in
+OVERLORD_DIR=$(dirname $(realpath $0))
+
+if [[ -z $OVERLORD_DIR ]]
+then
+    # Overlord is in the PATH, so dirname would have been empty.
+    # We can find out the path by using command -v $0
+    OVERLORD_DIR=$(dirname $(command -v $0))
+else
+    cd $OVERLORD_DIR
+    OVERLORD_DIR=$PWD
+fi
+
+# Save command line arguments for later use by the CLI processor
+OVERLORD_ARGC=$#
+OVERLORD_ARGV=("$@")
+
+# Make sure we haven't been linked to a different folder
+if [[ ! -e $OVERLORD_DIR/lib/overlord.bash ]]
+then
+    echo "overlord: fatal: cannot find overlord library in $OVERLORD_DIR" >&2
+    echo "overlord: Your installation is corrupt!" >&2
+    exit 1
+fi
+
+# Load the Overlord library
+source $OVERLORD_DIR/lib/overlord.bash
+
+msg_debug "Overlord is in $OVERLORD_DIR"

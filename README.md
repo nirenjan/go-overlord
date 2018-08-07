@@ -5,7 +5,7 @@ a journal, set reminders and more.
 
 ## Requirements
 
-Overlord requires Git 1.7.3 or later and Bash 4 or later.
+Overlord requires Git 1.7.3 or later and Bash 3 or later.
 
 ## Usage
 
@@ -20,8 +20,9 @@ TODO: List all commands
 
 ## Installation
 
-1. Clone the Overlord repository and add the path to your PATH environment
-   variable
+1. Clone the Overlord repository.
+2. Add the path to your PATH environment variable. Alternatively, you can create
+   a symbolic link to *<overlord-path>*/overlord from a folder in your PATH.
 2. Make sure your name and e-mail address is set in the global git configuration
 3. Run `overlord init` and it will automatically take care of the rest.
 
