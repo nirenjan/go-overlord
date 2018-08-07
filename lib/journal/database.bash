@@ -69,10 +69,11 @@ journal_db_delete_entry_by_id()
 {
     local entry_id="${1//:/}"
 
+    _journal_db_verify_or_regenerate
+
     sed -i "/^$entry_id:/d" "$OVERLORD_JOURNAL_DB_PATH"
 
     _journal_db_protect
-    _journal_db_verify_or_regenerate
 }
 
 # Find journal entry by ID
