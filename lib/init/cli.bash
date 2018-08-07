@@ -2,6 +2,7 @@
 
 OVERLORD_INIT_MODULES=''
 OVERLORD_DEFAULT_MODULES=''
+OVERLORD_INIT_CAPABLE_MODULES=''
 
 init_help_summary()
 {
@@ -36,7 +37,7 @@ Options:
     -h, --help          Display this help message
 
 Available modules:
-    $(echo $OVERLORD_DEFAULT_MODULES | sed 's/init *//')
+    $OVERLORD_INIT_CAPABLE_MODULES
 EOM
 }
 
@@ -75,8 +76,8 @@ init_cli()
                 warn_emerg "error: require module for -i option, ignoring"
             else
                 init_validate_and_add_module $1
+                shift
             fi
-            shift
             ;;
 
         *)
@@ -89,8 +90,8 @@ init_cli()
 
     if [[ -z $OVERLORD_INIT_MODULES ]]
     then
-        msg_debug "Using default initialize modules: $OVERLORD_DEFAULT_MODULES"
-        OVERLORD_INIT_MODULES="$OVERLORD_DEFAULT_MODULES"
+        msg_debug "Using default initialize modules: $OVERLORD_INIT_CAPABLE_MODULES"
+        OVERLORD_INIT_MODULES="$OVERLORD_INIT_CAPABLE_MODULES"
     fi
 
     msg_debug "Calling initialization routines"
@@ -98,8 +99,3 @@ init_cli()
     exit 0
 }
 
-init_init()
-{
-    # Nothing to do to initialize init
-    :
-}

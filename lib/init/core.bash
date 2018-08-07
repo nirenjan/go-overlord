@@ -44,6 +44,17 @@ register_module()
     else
         OVERLORD_DEFAULT_MODULES="$OVERLORD_DEFAULT_MODULES $module"
     fi
+
+    # Check if the module has a corresponding _init function registered
+    if type -t ${module}_init >/dev/null
+    then
+        if [[ -z "$OVERLORD_INIT_CAPABLE_MODULES" ]]
+        then
+            OVERLORD_INIT_CAPABLE_MODULES=$module
+        else
+            OVERLORD_INIT_CAPABLE_MODULES="$OVERLORD_INIT_CAPABLE_MODULES $module"
+        fi
+    fi
 }
 
 # Check if the given module is registered
@@ -53,14 +64,21 @@ module_registered()
 
 }
 
+# Check if the given module is capable of initialization
+module_init_capable()
+{
+    [[ "$OVERLORD_INIT_CAPABLE_MODULES" == *"$1"* ]]
+
+}
+
 init_validate_and_add_module()
 {
     local module=$1
 
-    if ! module_registered $module
+    if ! module_init_capable $module
     then
-        warn_emerg "fatal: module $module not recognized"
-        exit 1
+        warn_err "module $module does not support initialization"
+        return
     fi
 
     if [[ "$OVERLORD_INIT_MODULES" != *" $module "* ]]
