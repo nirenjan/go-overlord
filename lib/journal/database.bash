@@ -6,17 +6,50 @@
 # Date can be computed from the path
 
 OVERLORD_JOURNAL_DB_PATH="${OVERLORD_JOURNAL_DIR}/.db"
+OVERLORD_JOURNAL_DB_CSUM="${OVERLORD_JOURNAL_DIR}/.db_checksum"
 
-_journal_db_git()
+_JOURNAL_CHECKSUM_TOOL=sha1sum
+
+_journal_db_verify()
 {
-    git add "$OVERLORD_JOURNAL_DB_PATH"
+    "$_JOURNAL_CHECKSUM_TOOL" --check "$OVERLORD_JOURNAL_DB_CSUM" &>/dev/null
+}
+
+_journal_db_protect()
+{
+    "$_JOURNAL_CHECKSUM_TOOL" "$OVERLORD_JOURNAL_DB_PATH" \
+        >"$OVERLORD_JOURNAL_DB_CSUM"
 }
 
 journal_db_init()
 {
     touch "${OVERLORD_JOURNAL_DB_PATH}"
+    _journal_db_protect
 
-    _journal_db_git
+    cat > "${OVERLORD_JOURNAL_DIR}/.gitignore" <<EOM
+# Ignore the database and checksum files
+/${OVERLORD_JOURNAL_DB_PATH##*/}
+/${OVERLORD_JOURNAL_DB_CSUM##*/}
+
+EOM
+    git add "$OVERLORD_JOURNAL_DIR/.gitignore"
+}
+
+_journal_db_verify_or_regenerate()
+{
+    if ! _journal_db_verify
+    then
+        # Regenerate the database
+        warn_err "Journal database is corrupted" "Regenerating, please wait..."
+
+        rm -f "$OVERLORD_JOURNAL_DB_PATH"
+        _journal_find_all_entries | sort | while read entry
+        do
+            journal_db_add_entry "$entry"
+        done
+
+        _journal_db_protect
+    fi
 }
 
 # Add entry by path
@@ -28,7 +61,7 @@ journal_db_add_entry()
 
     echo "$id:$1:$tags:$title" >> "$OVERLORD_JOURNAL_DB_PATH"
 
-    _journal_db_git
+    _journal_db_protect
 }
 
 # Delete journal entry by ID
@@ -38,12 +71,14 @@ journal_db_delete_entry_by_id()
 
     sed -i "/^$entry_id:/d" "$OVERLORD_JOURNAL_DB_PATH"
 
-    _journal_db_git
+    _journal_db_protect
+    _journal_db_verify_or_regenerate
 }
 
 # Find journal entry by ID
 journal_db_get_entry_by_id()
 {
+    _journal_db_verify_or_regenerate
     sed -n "/^${1//:/}:/p" "$OVERLORD_JOURNAL_DB_PATH"
 }
 
@@ -85,6 +120,7 @@ journal_db_get_entry_title()
 # List entries, optionally filter by tags
 journal_db_list_filter()
 {
+    _journal_db_verify_or_regenerate
     if [[ "$#" > 0 ]]
     then
         awk -F: "\$3 ~ /$(echo "$@" | sed 's/\s\+/|/g')/" \
@@ -97,5 +133,6 @@ journal_db_list_filter()
 # List all tags
 journal_db_list_tags()
 {
+    _journal_db_verify_or_regenerate
     cut -d: -f3 "$OVERLORD_JOURNAL_DB_PATH" | sed 's/\s\+/\n/g' | sort -u
 }
