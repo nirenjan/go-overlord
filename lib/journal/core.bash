@@ -31,8 +31,8 @@ _journal_process_date_path()
     rest=${rest#*-}
     local dd=${rest%%T*}
     rest=${rest#*T}
-    local hhmm=${rest%:*}
-    hhmm=${hhmm/:/}
+    local hhmm=${rest/:/}
+    hhmm=${hhmm%%:*}
 
     echo "$OVERLORD_JOURNAL_DIR/$yyyy/$mm/$dd/${hhmm}.log"
 }
