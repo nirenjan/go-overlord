@@ -33,6 +33,7 @@ require git     # Git wrapper APIs
 
 require config  # Configuration information
 require init    # Intialization info - this should be before other modules
+require checksum # Checksum utilities
 
 # TODO: Uncomment these once the corresponding module is created
 require journal # Journal processing

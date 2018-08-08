@@ -8,16 +8,15 @@
 OVERLORD_JOURNAL_DB_PATH="${OVERLORD_JOURNAL_DIR}/.db"
 OVERLORD_JOURNAL_DB_CSUM="${OVERLORD_JOURNAL_DIR}/.db_checksum"
 
-_JOURNAL_CHECKSUM_TOOL=sha1sum
-
 _journal_db_verify()
 {
-    "$_JOURNAL_CHECKSUM_TOOL" --check "$OVERLORD_JOURNAL_DB_CSUM" &>/dev/null
+    checksum_validate SHA1 "$OVERLORD_JOURNAL_DB_PATH" \
+                      `cat "$OVERLORD_JOURNAL_DB_CSUM"`
 }
 
 _journal_db_protect()
 {
-    "$_JOURNAL_CHECKSUM_TOOL" "$OVERLORD_JOURNAL_DB_PATH" \
+    checksum_generate SHA1 "$OVERLORD_JOURNAL_DB_PATH" \
         >"$OVERLORD_JOURNAL_DB_CSUM"
 }
 

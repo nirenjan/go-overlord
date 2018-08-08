@@ -162,7 +162,7 @@ _journal_get_entry_tags()
 _journal_set_entry_id()
 {
     local journal_path="$1"
-    local id=$(md5sum "$journal_path" | head -c10)
+    local id=$(checksum_generate MD5 "$journal_path" | head -c10)
     echo -e "@ID\t$id" >> $journal_path
 }
 
