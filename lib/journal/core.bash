@@ -52,13 +52,8 @@ _journal_get_title()
     sed '/^\s*$/d' "$journal_path" | sed -n '1p'
 }
 
-# Create a new journal entry
-journal_new()
+_journal_setup_editor()
 {
-    local tag_list=$(_journal_process_tag_list "$@")
-    local date=$(date -Isec)
-    local journal_path=$(_journal_process_date_path "$date")
-
     # Use EDITOR in preference to gitconfig core.editor in preference to vim
     [[ -z $EDITOR ]] && EDITOR=$(git config core.editor)
 
@@ -76,20 +71,21 @@ journal_new()
         warn_emerg "Please set your editor preferences"
         exit 1
     fi
+}
 
-    cd .git
-    cat > COMMIT_EDITMSG <<-EOM
-	# Enter your journal message here. Lines beginning with # are deleted
-	# from the journal
-EOM
-
-    $EDITOR COMMIT_EDITMSG
+# Process the journal entry for insertion into the database
+_journal_process_entry()
+{
+    local entry_path="$1"
+    local journal_path="$2"
+    local date="$3"
+    local tag_list="$4"
 
     # Remove comment lines from the journal
-    sed -i '/^#/d' COMMIT_EDITMSG
+    sed -i '/^#/d' "$entry_path"
 
     # Compute line count by deleting all empty lines as well
-    local line_count=$(sed '/^\s*$/d' COMMIT_EDITMSG | wc -l)
+    local line_count=$(sed '/^\s*$/d' "$entry_path" | wc -l)
     if [[ $line_count == 0 ]]
     then
         warn_emerg "fatal: cannot add an empty entry to the journal"
@@ -100,8 +96,7 @@ EOM
     mkdir -p $(dirname "$journal_path")
 
     # Copy the message over to the journal
-    cp COMMIT_EDITMSG "$journal_path"
-    cd ..
+    cp "$entry_path" "$journal_path"
 
     # Add spacer line for extra elements
     echo >> "$journal_path"
@@ -123,8 +118,81 @@ EOM
     # NOTE: This must be the last element
     _journal_set_entry_id "$journal_path"
 
+}
+
+# Create a new journal entry
+journal_new()
+{
+    local tag_list=$(_journal_process_tag_list "$@")
+    local date=$(date -Isec)
+    local journal_path=$(_journal_process_date_path "$date")
+
+    _journal_setup_editor
+
+    cd .git
+    cat > COMMIT_EDITMSG <<-EOM
+	# Enter your journal message here. Lines beginning with # are deleted
+	# from the journal
+EOM
+
+    $EDITOR COMMIT_EDITMSG
+
+    _journal_process_entry COMMIT_EDITMSG "$journal_path" "$date" "$tag_list"
+
     # Save the new entry in the log
-    _journal_entry_save "$journal_path" "$date" "$title"
+    _journal_entry_save "$journal_path" "$date" \
+        "add-entry $(_journal_get_title "$journal_path")"
+}
+
+journal_edit()
+{
+    local entry_id="$1"
+    if [[ -z "$1" ]]
+    then
+        warn_emerg 'fatal: must specify log entry to edit'
+        exit 1
+    fi
+
+    local db_entry=$(journal_db_get_entry_by_id "$entry_id")
+    if [[ -z "$db_entry" ]]
+    then
+        warn_emerg "fatal: Unable to find entry with ID $entry_id"
+        exit 1
+    fi
+
+    _journal_setup_editor
+
+    local entry_path=$(journal_db_get_entry_path "$db_entry")
+    local old_title=$(journal_db_get_entry_title "$db_entry")
+    local tags=$(journal_db_get_entry_tags "$db_entry")
+    local temp_path=$(mktemp)
+
+    # Get only the text content
+    sed -e '/^@Date\t/d' -e '/^@Title\t/d' -e '/^@Tags\t/d' -e '/^@ID\t/d' \
+        $entry_path | sed '$d' > "$temp_path"
+
+    local new_date=$(date -Isec)
+    local new_path=$(_journal_process_date_path "$new_date")
+
+    cp "$temp_path" "$OVERLORD_DATA"/.git/COMMIT_EDITMSG
+    (cd "$OVERLORD_DATA"; "$EDITOR" .git/COMMIT_EDITMSG)
+
+    _journal_process_entry "$OVERLORD_DATA"/.git/COMMIT_EDITMSG \
+        "$new_path" "$new_date" "$tags"
+
+    local new_title=$(_journal_get_title "$new_path")
+    local commitmsg
+    if [[ "$new_title" == "$old_title" ]]
+    then
+        commitmsg="edit-entry $new_title"
+    else
+        commitmsg="edit-entry '$old_title' -> '$new_title'"
+    fi
+
+    _journal_delete_entry_real "$entry_path" "$entry_id" "$old_title"
+    _journal_entry_save "$new_path" "$new_date" "$commitmsg"
+
+    rm -f "$temp_path"
 }
 
 _journal_entry_save()
@@ -133,10 +201,11 @@ _journal_entry_save()
     local date="$2"
     local title="$3"
 
+    cd "$OVERLORD_DATA"
     git add "$journal_path"
     journal_db_add_entry "$journal_path"
     git_set_commit_params "$date"
-    git_save_files "journal: add-entry '$title'"
+    git_save_files "journal: $title"
 }
 
 # Initialize the journal module
@@ -324,16 +393,24 @@ _journal_delete_entry()
 
     if [[ "$REPLY" == y || "$REPLY" == Y ]]
     then
-        cd "$OVERLORD_JOURNAL_DIR"
-        git rm -f "${entry#$OVERLORD_JOURNAL_DIR/}" &>/dev/null
-        journal_db_delete_entry_by_id "$id"
-        git_set_commit_params
-        git_save_files "log: delete-entry '$title'"
+        _journal_delete_entry_real "$entry" "$id" "$title"
+        git_save_files "journal: delete-entry $title"
 
         warn_emerg "deleted journal entry '$title'"
     else
         echo "Journal entry '$title' not deleted"
     fi
+}
+
+_journal_delete_entry_real()
+{
+    local entry="$1"
+    local id="$2"
+
+    cd "$OVERLORD_JOURNAL_DIR"
+    git rm -f "${entry#$OVERLORD_JOURNAL_DIR/}" &>/dev/null
+    journal_db_delete_entry_by_id "$id"
+    git_set_commit_params
 }
 
 #######################################################################
@@ -377,7 +454,7 @@ journal_import()
         cp "$file" "$journal_path"
         _journal_set_entry_id "$journal_path"
 
-        _journal_entry_save "$journal_path" "$journal_date" "$title"
+        _journal_entry_save "$journal_path" "$journal_date" "import-entry $title"
     done
 
     rm -rf "$journal_backup"

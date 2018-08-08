@@ -26,6 +26,10 @@ Sub-commands:
 
     show <entry>        Display the entry by the given <entry> ID.
 
+    edit <entry>        Edit the entry by the given <entry> ID. This
+                        will delete the old entry and add a new one with
+                        a new ID.
+
     tags                Display all the tags currently in the log
 
     display [tags]      Display the full log. If tags are specified,
@@ -51,7 +55,7 @@ journal_cli()
         shift
 
         case $cmd in
-        new|list|display|show|delete)
+        new|list|display|show|delete|edit)
             msg_debug "Running journal_${cmd} $@"
             journal_${cmd} "$@"
             ;;
