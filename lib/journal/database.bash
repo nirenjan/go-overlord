@@ -10,6 +10,10 @@ OVERLORD_JOURNAL_DB_CSUM="${OVERLORD_JOURNAL_DIR}/.db_checksum"
 
 _journal_db_verify()
 {
+    # Make sure that the database files exist
+    [ -e "$OVERLORD_JOURNAL_DB_PATH" ] || touch "$OVERLORD_JOURNAL_DB_PATH"
+    [ -e "$OVERLORD_JOURNAL_DB_CSUM" ] || touch "$OVERLORD_JOURNAL_DB_CSUM"
+
     checksum_validate SHA1 "$OVERLORD_JOURNAL_DB_PATH" \
                       `cat "$OVERLORD_JOURNAL_DB_CSUM"`
 }
