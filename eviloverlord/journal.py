@@ -260,34 +260,45 @@ class Entry:
 
     def display(self):
         """Display the journal entry"""
+        def stardate(timestamp):
+            """Compute the Stardate, given the timestamp"""
+            jd = (timestamp / 86400.0 + 40587.5)
+            return ' (Stardate ' + ('%05.9f' % jd)[:-7] + ')'
+
+        output = ''
         # Display the date
-        print(terminal.reset() +
-              terminal.foreground(terminal.Color.Yellow) +
-              time.asctime(time.localtime(self.timestamp)) +
-              terminal.reset())
+        output += terminal.reset() + \
+                  terminal.foreground(terminal.Color.Yellow) + \
+                  time.strftime('%a %b %d %H:%M:%S %Z %Y',
+                                time.localtime(self.timestamp)) + \
+                  terminal.reset() + \
+                  terminal.foreground(terminal.Color.Red) + \
+                  stardate(self.timestamp) + terminal.reset() + '\n'
 
         # Display the title
-        print(terminal.bold() +
-              self.title +
-              terminal.reset())
-        print(terminal.bold() +
-              '=' * len(self.title) +
-              terminal.reset())
+        output += terminal.bold() + \
+                  self.title + \
+                  terminal.reset() + '\n'
+        output += terminal.bold() + \
+                  '=' * len(self.title) + \
+                  terminal.reset() + '\n'
 
         # Display the text
-        print(self.text.rstrip() + '\n')
+        output += self.text.rstrip() + '\n' + '\n'
 
         # Display tags, if any
         if self.tags:
-            print(terminal.bold() +
-                  'Tags:\t' +
-                  terminal.reset() +
-                  terminal.foreground(terminal.Color.Red) +
-                  ' '.join(self.tags) +
-                  terminal.reset())
+            output += terminal.bold() + \
+                      'Tags:\t' + \
+                      terminal.reset() + \
+                      terminal.foreground(terminal.Color.Cyan) + \
+                      ' '.join(self.tags) + \
+                      terminal.reset() + '\n'
 
         # Display a horizontal line to separate the entries
-        print(terminal.horizontal_line())
+        output += terminal.horizontal_line() + '\n'
+
+        return output
 
     @staticmethod
     def strip_ident(ident, text):
@@ -513,7 +524,7 @@ def operate_on_entry(entry_id, show=False, delete=False):
     old_entry = Entry.from_path(entry_matches[0].path)
 
     if show:
-        old_entry.display()
+        print(old_entry.display())
         return
 
     if delete:
@@ -570,8 +581,11 @@ def list_or_display_entries(tags, display=False):
 
     if display:
         # Display entries
+        pager = os.popen('less -FRX', mode='w')
         for entry in entries:
-            Entry.from_path(entry.path).display()
+            pager.write(Entry.from_path(entry.path).display())
+        pager.close()
+
     else:
         # List entries
         fmt_str = '%-12s%-12s%s'
