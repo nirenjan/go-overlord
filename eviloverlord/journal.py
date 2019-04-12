@@ -24,7 +24,6 @@ from . import log
 ########################################################################
 class JournalError(Exception):
     """Exception raised during Journal processing"""
-    pass
 
 DBEntry = collections.namedtuple('DBEntry',
                                  ['entry_id', 'date', 'path', 'tags', 'title'])
@@ -65,9 +64,9 @@ class Journal:
 
         git.ignore(reset=True,
                    patterns=[
-                        '# Ignore all hidden files, except .gitignore',
-                        '.*',
-                        '!.gitignore'])
+                       '# Ignore all hidden files, except .gitignore',
+                       '.*',
+                       '!.gitignore'])
 
         git.commit('init')
 
@@ -262,8 +261,8 @@ class Entry:
         """Display the journal entry"""
         def stardate(timestamp):
             """Compute the Stardate, given the timestamp"""
-            jd = (timestamp / 86400.0 + 40587.5)
-            return ' (Stardate ' + ('%05.9f' % jd)[:-7] + ')'
+            julian_date = (timestamp / 86400.0 + 40587.5)
+            return ' (Stardate ' + ('%05.9f' % julian_date)[:-7] + ')'
 
         output = ''
         # Display the date
@@ -466,7 +465,7 @@ def editor(filename):
     if _editor is None:
         _editor = 'vim'
     else:
-        _editor = _editor.decode('utf-8').rstrip()
+        _editor = _editor.rstrip()
 
     # Ideally, we'd use the subprocess module to communicate with the editor
     # However, I haven't figured out how to get it to work with a proper TTY
@@ -688,6 +687,6 @@ def import_data(journaldict):
 ########################################################################
 # Init Handlers
 ########################################################################
-def module_init(force=False):
+def module_init(force=False): # pylint: disable=unused-argument
     """Initialize the module"""
     Journal.module_init()

@@ -32,6 +32,9 @@ def register_command(parser):
 
 def handle_command(parser, args):
     """Handle init command line"""
+    # parser is unused, delete it
+    del parser
+
     # Check if Overlord is already initialized
     data_dir = config.data_dir()
     inited_file = os.path.join(data_dir, '.init')
