@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog] and this project adheres to [Semantic
 Versioning]
 
 ## [Unreleased]
+### Changed
+- Evil Overlord is now written in Go, resulting in a single binary
+- Backup/Restore functionality now uses gzip compression, rather than
+  LZMA (XZ). This is because LZMA is not available in the Go standard
+  library.
+- Version is now a separate command, rather than a command line switch.
+- No longer uses Git in the backend. This prefers to not call out to external
+  applications, except for the editor.
+- The terminal package expects this to be run in a Unix environment such as
+  Linux or macOS. This has not been tested with Windows, and probably never
+  will.
 
 ## [0.1.0] - 2018-08-06
 ### Added

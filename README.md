@@ -5,7 +5,7 @@ a journal, set reminders and more.
 
 ## Requirements
 
-Overlord requires Git 1.7.3 or later and Python 3.4 or later.
+Overlord requires Go 1.13 or later.
 
 ## Usage
 
@@ -20,15 +20,12 @@ TODO: List all commands
 
 ## Installation
 
-1. Clone the Overlord repository.
-2. Add the path to your PATH environment variable. Alternatively, you can create
-   a symbolic link to *<overlord-path>*/overlord from a folder in your PATH.
-2. Make sure your name and e-mail address is set in the global git configuration
-3. Run `overlord init` and it will automatically take care of the rest.
+1. Run `go get nirenjan.org/overlord`
+2. Run `overlord init` and it will automatically take care of the rest.
 
 ## Contributing
 
-1. Fork it ( https://github.com/nirenjan/overlord/fork )
+1. Fork it ( https://github.com/nirenjan/go-overlord/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
