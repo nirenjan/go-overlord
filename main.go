@@ -1,4 +1,4 @@
-package main // import nirenjan.org/overlord
+package main // import "nirenjan.org/overlord"
 
 import (
 	"nirenjan.org/overlord/internal/cmds/cli"
