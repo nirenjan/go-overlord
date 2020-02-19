@@ -23,13 +23,18 @@ func DataDir() (string, error) {
 	var err error
 	dir, err = filepath.EvalSymlinks(data)
 	if err != nil {
-		return "", err
-	}
-
-	// Get absolute path
-	dir, err = filepath.Abs(dir)
-	if err != nil {
-		return "", err
+		if !os.IsNotExist(err) {
+			return "", err
+		}
+		dir = data
+	} else {
+		// Get absolute path
+		dir, err = filepath.Abs(dir)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return "", err
+			}
+		}
 	}
 
 	err = os.MkdirAll(dir, os.ModePerm)
