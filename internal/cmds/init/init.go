@@ -5,6 +5,7 @@ import (
 
 	"nirenjan.org/overlord/internal/cmds"
 	"nirenjan.org/overlord/internal/cmds/cli"
+	"nirenjan.org/overlord/internal/config"
 )
 
 func init() {
@@ -30,8 +31,15 @@ func init() {
 func initHandler(cmd *cli.Command, args []string) error {
 	// Ignore arguments
 
+	// Make sure that the data directory exists
+	data, err := config.DataDir()
+	if err != nil {
+		return err
+	}
+	fmt.Println(data)
+
 	// Run the module callbacks for ModuleInit
-	err := cmds.RunCallback(cmds.ModuleInit)
+	err = cmds.RunCallback(cmds.ModuleInit)
 	if err == nil {
 		fmt.Println("Overlord initialization complete")
 	}

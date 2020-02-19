@@ -29,6 +29,11 @@ func journalPath() (string, error) {
 	return journal, nil
 }
 
+func journalInit() error {
+	_, err := journalPath()
+	return err
+}
+
 // newHandler creates a new journal entry with the tags given
 func newHandler(cmd *cli.Command, args []string) error {
 	var entry Entry
