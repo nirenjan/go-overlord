@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"nirenjan.org/overlord/internal/config"
 )
 
 func backupHandler(_ []byte) ([]byte, error) {
@@ -12,7 +14,7 @@ func backupHandler(_ []byte) ([]byte, error) {
 	var err error
 	var journalDir string
 
-	journalDir, err = journalPath()
+	journalDir, err = config.ModuleDir("journal")
 	if err != nil {
 		return retval, err
 	}

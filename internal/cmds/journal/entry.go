@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"nirenjan.org/overlord/internal/config"
 	"nirenjan.org/overlord/internal/terminal"
 	"nirenjan.org/overlord/internal/util"
 )
@@ -86,18 +87,11 @@ func newEntry(tags []string) (Entry, error) {
 }
 
 func (e *Entry) UpdatePath() error {
-	jpath, err := journalPath()
+	dpath, err := config.ModuleDir("journal", e.Date.Format("2006"))
 	if err != nil {
 		return err
 	}
-
-	date := e.Date
-	dpath := filepath.Join(jpath, date.Format("2006"))
-	err = os.MkdirAll(dpath, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	e.Path = filepath.Join(dpath, date.Format("0102-150405.entry"))
+	e.Path = filepath.Join(dpath, e.Date.Format("0102-150405.entry"))
 	return nil
 }
 

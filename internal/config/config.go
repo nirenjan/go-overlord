@@ -46,9 +46,9 @@ func DataDir() (string, error) {
 	return dir, nil
 }
 
-// ModuleDir returns the path to the Overlord data directory for the given
-// module
-func ModuleDir(module string) (string, error) {
+// ModuleDir returns the path under the Overlord data directory for the given
+// module and directory combination
+func ModuleDir(module string, dir ...string) (string, error) {
 	if module == "" {
 		return "", errors.New("ModuleDir: must specify a module name")
 	}
@@ -58,7 +58,9 @@ func ModuleDir(module string) (string, error) {
 		return "", err
 	}
 
-	modDir := filepath.Join(dataDir, module)
+	dirs := []string{dataDir, module}
+	dirs = append(dirs, dir...)
+	modDir := filepath.Join(dirs...)
 	err = os.MkdirAll(modDir, os.ModePerm)
 	if err != nil {
 		return "", err

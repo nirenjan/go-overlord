@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -14,23 +13,8 @@ import (
 	"nirenjan.org/overlord/internal/util"
 )
 
-func journalPath() (string, error) {
-	datadir, err := config.DataDir()
-	if err != nil {
-		return "", err
-	}
-
-	journal := filepath.Join(datadir, "journal")
-	err = os.MkdirAll(journal, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-
-	return journal, nil
-}
-
 func journalInit() error {
-	_, err := journalPath()
+	_, err := config.ModuleDir("journal")
 	return err
 }
 

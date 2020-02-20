@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"nirenjan.org/overlord/internal/config"
 	"nirenjan.org/overlord/internal/database"
 )
 
@@ -23,7 +24,7 @@ type DBEntry struct {
 var DB = make(map[string]DBEntry)
 
 func BuildDb() error {
-	journalDir, err := journalPath()
+	journalDir, err := config.ModuleDir("journal")
 	if err != nil {
 		return err
 	}
