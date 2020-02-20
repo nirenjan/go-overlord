@@ -2,37 +2,18 @@ package journal
 
 import (
 	"encoding/json"
-	"os"
-	"path/filepath"
-	"strings"
 
-	"nirenjan.org/overlord/internal/config"
+	"nirenjan.org/overlord/internal/util"
 )
 
 func backupHandler(_ []byte) ([]byte, error) {
-	var retval []byte
-	var err error
-	var journalDir string
-
-	journalDir, err = config.ModuleDir("journal")
-	if err != nil {
-		return retval, err
-	}
-
+	var dummy []byte
 	var entries []Entry
 
-	err = filepath.Walk(journalDir, func(path string, info os.FileInfo, err1 error) error {
+	err := util.FileWalk("journal", ".entry", func(path string) error {
+		entry, err1 := entryFromFile(path)
 		if err1 != nil {
 			return err1
-		}
-
-		if !strings.HasSuffix(info.Name(), ".entry") || info.IsDir() {
-			return nil
-		}
-
-		entry, err2 := entryFromFile(path)
-		if err2 != nil {
-			return err2
 		}
 
 		entries = append(entries, entry)
@@ -41,12 +22,10 @@ func backupHandler(_ []byte) ([]byte, error) {
 	})
 
 	if err != nil {
-		return retval, err
+		return dummy, err
 	}
 
-	retval, err = json.Marshal(entries)
-
-	return retval, err
+	return json.Marshal(entries)
 }
 
 func restoreHandler(data []byte) ([]byte, error) {

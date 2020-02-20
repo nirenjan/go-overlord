@@ -1,13 +1,10 @@
 package journal
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
-	"nirenjan.org/overlord/internal/config"
 	"nirenjan.org/overlord/internal/database"
+	"nirenjan.org/overlord/internal/util"
 )
 
 // The journal DB is a hash table that maps the entry ID to the entry
@@ -24,24 +21,11 @@ type DBEntry struct {
 var DB = make(map[string]DBEntry)
 
 func BuildDb() error {
-	journalDir, err := config.ModuleDir("journal")
-	if err != nil {
-		return err
-	}
-
-	err1 := filepath.Walk(journalDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if !strings.HasSuffix(info.Name(), ".entry") {
-			return nil
-		}
-
+	err := util.FileWalk("journal", ".entry", func(path string) error {
 		// Load entry from file
-		entry, err2 := entryFromFile(path)
-		if err2 != nil {
-			return err2
+		entry, err1 := entryFromFile(path)
+		if err1 != nil {
+			return err1
 		}
 
 		// Add entry to database
@@ -50,8 +34,8 @@ func BuildDb() error {
 		return nil
 	})
 
-	if err1 != nil {
-		return err1
+	if err != nil {
+		return err
 	}
 
 	return SaveDb()
