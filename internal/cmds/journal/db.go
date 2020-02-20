@@ -1,13 +1,12 @@
 package journal
 
 import (
-	"encoding/gob"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"nirenjan.org/overlord/internal/log"
+	"nirenjan.org/overlord/internal/database"
 )
 
 // The journal DB is a hash table that maps the entry ID to the entry
@@ -75,45 +74,9 @@ func DeleteDbEntry(entry Entry) {
 }
 
 func SaveDb() error {
-	datadir, err := journalPath()
-	if err != nil {
-		return err
-	}
-
-	db_file := filepath.Join(datadir, ".database")
-	db, err1 := os.Create(db_file)
-	if err1 != nil {
-		return err1
-	}
-	defer db.Close()
-
-	encoder := gob.NewEncoder(db)
-	return encoder.Encode(DB)
+	return database.Save(DB)
 }
 
 func LoadDb() error {
-	datadir, err := journalPath()
-	if err != nil {
-		return err
-	}
-
-	db_file := filepath.Join(datadir, ".database")
-	db, err1 := os.Open(db_file)
-	if err1 != nil {
-		if os.IsNotExist(err1) {
-			log.Warning("Database is missing, rebuilding")
-			return BuildDb()
-		}
-		return err1
-	}
-	defer db.Close()
-
-	decoder := gob.NewDecoder(db)
-	err = decoder.Decode(&DB)
-	if err != nil {
-		log.Warning("Database is corrupted, rebuilding")
-		return BuildDb()
-	}
-
-	return nil
+	return database.Load(&DB, BuildDb)
 }
