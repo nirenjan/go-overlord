@@ -213,10 +213,6 @@ func (cmd *Command) help() {
 	fmt.Printf("usage: %v[-h] %v\n", cmd.commandChain(), cmd.cmd.Usage)
 
 	fmt.Println(cmd.cmd.LongHelp)
-	fmt.Println("Optional arguments")
-	fmt.Println("------------------")
-	fmt.Printf("\t%-20v\t%v\n\n", "-h, --help", "Display this help message and exit")
-
 	if cmd.isGroup {
 		fmt.Println("Commands")
 		fmt.Println("--------")
@@ -234,6 +230,10 @@ func (cmd *Command) help() {
 			fmt.Printf("\t%-20v\t%v\n", subcmd, cmdobj.cmd.BriefHelp)
 		}
 	}
+
+	fmt.Println("\nOptional arguments")
+	fmt.Println("------------------")
+	fmt.Printf("\t%-20v\t%v\n\n", "-h, --help", "Display this help message and exit")
 
 	os.Exit(0)
 }
