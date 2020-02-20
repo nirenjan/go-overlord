@@ -309,8 +309,9 @@ func Parse() {
 	}
 
 	// If we have finished parsing all the arguments, and we are still at
-	// a Group node, then display the help.
-	if parentNode.isGroup {
+	// a Group node, then display the help. However, if the Group node has
+	// an associated handler, call that instead
+	if parentNode.isGroup && parentNode.cmd.Handler == nil {
 		log.Debug("Displaying help for", parentNode.commandChain())
 		parentNode.help()
 	}
