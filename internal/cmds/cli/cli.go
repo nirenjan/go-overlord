@@ -56,6 +56,10 @@ type Cmd struct {
 
 	// Count is the number of arguments. This is ignored for None and Any
 	Count uint
+
+	// Subcommand is the text to print when listing subcommand nodes
+	// If this is empty, it defaults to "Commands"
+	Subcommand string
 }
 
 // Command is an internal structure used by the CLI manager
@@ -73,6 +77,7 @@ var rootCmd = Command{
 Overlord is a command-line based personal assistant. It can take notes,
 keep a journal, make reminders and more.
 `,
+		Subcommand: "Commands",
 	},
 	isGroup:     true,
 	subcommands: make(map[string]*Command),
@@ -139,6 +144,10 @@ func RegisterCommandGroup(parent *Command, cmd Cmd) (clicmd *Command, err error)
 	clicmd.isGroup = true
 	clicmd.subcommands = make(map[string]*Command)
 	clicmd.parent = parent
+
+	if cmd.Subcommand == "" {
+		clicmd.cmd.Subcommand = "Subcommands"
+	}
 
 	parent.subcommands[cmd.Command] = clicmd
 
@@ -208,14 +217,20 @@ func (cmd *Command) Usage() {
 	os.Exit(1)
 }
 
+// underline prints the string, followed by a line of - characters of the
+// same length as the string
+func underline(s string) {
+	fmt.Println(s)
+	fmt.Println(strings.Repeat("-", len(s)))
+}
+
 // help shows the usage and full help of the given command, and exits cleanly
 func (cmd *Command) help() {
 	fmt.Printf("usage: %v[-h] %v\n", cmd.commandChain(), cmd.cmd.Usage)
 
 	fmt.Println(cmd.cmd.LongHelp)
 	if cmd.isGroup {
-		fmt.Println("Commands")
-		fmt.Println("--------")
+		underline(cmd.cmd.Subcommand)
 
 		// Build a sorted slice of the individual subcommands
 		subcmds := make([]string, len(cmd.subcommands))
@@ -231,8 +246,8 @@ func (cmd *Command) help() {
 		}
 	}
 
-	fmt.Println("\nOptional arguments")
-	fmt.Println("------------------")
+	fmt.Println("")
+	underline("Optional arguments")
 	fmt.Printf("\t%-20v\t%v\n\n", "-h, --help", "Display this help message and exit")
 
 	os.Exit(0)
