@@ -2,8 +2,10 @@ package task
 
 import (
 	"sort"
+	"time"
 
 	"nirenjan.org/overlord/internal/cmds/cli"
+	"nirenjan.org/overlord/internal/log"
 )
 
 type TaskList []Task
@@ -35,6 +37,11 @@ func (tl TaskList) Less(i, j int) bool {
 	// If priorities are unequal, use them
 	if t1.Priority != t2.Priority {
 		return t1.Priority < t2.Priority
+	}
+
+	// Priorities are still equal, sort by state
+	if t1.State != t2.State {
+		return t1.State < t2.State
 	}
 
 	// All else being equal, sort by creation date
@@ -82,7 +89,6 @@ in progress (but not due shortly), and tasks that haven't been started.
 List all tasks that are past their due date, ordered by priority.
 `,
 		Handler: listHandler,
-		Args:    cli.None,
 	}
 
 	_, err = cli.RegisterCommand(taskList, cmd)
@@ -100,7 +106,6 @@ List all tasks that are due within the next week, ordered by the due
 date, then by their priority.
 `,
 		Handler: listHandler,
-		Args:    cli.None,
 	}
 
 	_, err = cli.RegisterCommand(taskList, cmd)
@@ -118,7 +123,86 @@ List all tasks that are currently in progress, ordered by the due date
 and then by the priority.
 `,
 		Handler: listHandler,
-		Args:    cli.None,
+	}
+
+	_, err = cli.RegisterCommand(taskList, cmd)
+	if err != nil {
+		return err
+	}
+
+	// task list completed
+	cmd = cli.Cmd{
+		Command:   "completed",
+		Usage:     " ",
+		BriefHelp: "list all completed tasks",
+		LongHelp: `
+List all tasks that are completed.
+`,
+		Handler: listHandler,
+	}
+
+	_, err = cli.RegisterCommand(taskList, cmd)
+	if err != nil {
+		return err
+	}
+
+	// task list deleted
+	cmd = cli.Cmd{
+		Command:   "deleted",
+		Usage:     " ",
+		BriefHelp: "list all deleted tasks",
+		LongHelp: `
+List all tasks that are deleted.
+`,
+		Handler: listHandler,
+	}
+
+	_, err = cli.RegisterCommand(taskList, cmd)
+	if err != nil {
+		return err
+	}
+
+	// task list blocked
+	cmd = cli.Cmd{
+		Command:   "blocked",
+		Usage:     " ",
+		BriefHelp: "list all blocked tasks",
+		LongHelp: `
+List all tasks that are blocked.
+`,
+		Handler: listHandler,
+	}
+
+	_, err = cli.RegisterCommand(taskList, cmd)
+	if err != nil {
+		return err
+	}
+
+	// task list deferred
+	cmd = cli.Cmd{
+		Command:   "deferred",
+		Usage:     " ",
+		BriefHelp: "list all deferred tasks",
+		LongHelp: `
+List all tasks that are deferred.
+`,
+		Handler: listHandler,
+	}
+
+	_, err = cli.RegisterCommand(taskList, cmd)
+	if err != nil {
+		return err
+	}
+
+	// task list all
+	cmd = cli.Cmd{
+		Command:   "all",
+		Usage:     " ",
+		BriefHelp: "list all tasks",
+		LongHelp: `
+List all tasks, including deferred, completed and deleted ones.
+`,
+		Handler: listHandler,
 	}
 
 	_, err = cli.RegisterCommand(taskList, cmd)
@@ -147,12 +231,52 @@ func listHandler(cmd *cli.Command, args []string) error {
 		return err
 	}
 
+	log.Debug(cmd)
+	log.Debug(args)
+
 	tasks := sortedTaskList()
 
 	Header()
 	for _, task := range tasks {
-		task.Summary()
+		if task.Filter(args[0]) {
+			task.Summary()
+		}
 	}
 
 	return nil
+}
+
+func (t *Task) Filter(filter string) bool {
+	switch filter {
+	case "pending", "list":
+		return t.State < Deferred
+
+	case "in-progress":
+		return t.State == InProgress
+
+	case "overdue":
+		return t.State < Deferred && time.Until(t.Due) <= 0
+
+	case "due":
+		if t.State < Deferred {
+			due := time.Until(t.Due)
+			return due > 0 && due < 96*time.Hour
+		} else {
+			return false
+		}
+
+	case "blocked":
+		return t.State == Blocked
+
+	case "completed":
+		return t.State == Completed
+
+	case "deferred":
+		return t.State == Deferred
+
+	case "deleted":
+		return t.State == Deleted
+	}
+
+	return true
 }
