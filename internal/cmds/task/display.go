@@ -15,7 +15,7 @@ func Header() {
 
 // Task Status as symbols
 func (t *Task) Status() string {
-	var Symbol = []rune{'\u23F9', '\u25B6', '\u23F8', '\u26D4', '\u23E9', '\u2705', '\u274C'}
+	var Symbol = []rune{'\U0001F6D1', '\u25B6', '\u23F8', '\u26D4', '\u23E9', '\u2705', '\u274C'}
 	var status string
 	if t.State >= NotStarted && t.State <= Deleted {
 		status = string(Symbol[t.State]) + " "

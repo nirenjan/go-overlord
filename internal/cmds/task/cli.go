@@ -48,7 +48,7 @@ need to be done, update the task state, due date, and priority.
 	* task complete <ID>
 	* task delete <ID>
 	* task show [ID] // Show detailed info, if ID not given, then show all
-	* task edit <ID> // Show detailed info
+	* task edit <ID> // Edit notes
 	* task priority <ID> <P0-9>
 	* task cleanup // Delete completed tasks
 	 */
@@ -70,6 +70,11 @@ need to be done, update the task state, due date, and priority.
 	}
 
 	err = registerShowHandler(taskRoot)
+	if err != nil {
+		return err
+	}
+
+	err = registerDeleteHandler(taskRoot)
 	if err != nil {
 		return err
 	}
