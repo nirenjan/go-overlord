@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
 	"nirenjan.org/overlord/config"
 	"nirenjan.org/overlord/terminal"
 	"nirenjan.org/overlord/util"

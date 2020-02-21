@@ -9,14 +9,14 @@ import (
 	"os"
 	"time"
 
-	"nirenjan.org/overlord/cmds"
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
+	"nirenjan.org/overlord/module"
 )
 
 func init() {
-	mod := cmds.Module{Name: "backup"}
+	mod := module.Module{Name: "backup"}
 
-	mod.Callbacks[cmds.BuildCommandTree] = func() error {
+	mod.Callbacks[module.BuildCommandTree] = func() error {
 		var cmd cli.Cmd
 		var err error
 		var backupRoot *cli.Command
@@ -78,7 +78,7 @@ use "-" as the filename.
 		return nil
 	}
 
-	cmds.RegisterModule(mod)
+	module.RegisterModule(mod)
 }
 
 func exportHandler(cmd *cli.Command, args []string) error {
@@ -118,7 +118,7 @@ func exportHandler(cmd *cli.Command, args []string) error {
 	defer outComp.Close()
 
 	var data = make(map[string]json.RawMessage)
-	for _, it := range cmds.IterateCallback(cmds.Backup) {
+	for _, it := range module.IterateCallback(module.Backup) {
 		var modData []byte
 		modData, err = it.Callback([]byte{})
 		if err != nil {
@@ -176,7 +176,7 @@ func importHandler(cmd *cli.Command, args []string) error {
 	var data = make(map[string]json.RawMessage)
 	err = json.Unmarshal(inData, &data)
 
-	for _, it := range cmds.IterateCallback(cmds.Restore) {
+	for _, it := range module.IterateCallback(module.Restore) {
 		_, err = it.Callback([]byte(data[it.Name]))
 		if err != nil {
 			return err

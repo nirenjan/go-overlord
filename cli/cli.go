@@ -9,8 +9,8 @@ import (
 	"sort"
 	"strings"
 
-	"nirenjan.org/overlord/cmds"
 	"nirenjan.org/overlord/log"
+	"nirenjan.org/overlord/module"
 )
 
 // ArgCount is an enumeration that describes the number of arguments needed
@@ -272,7 +272,7 @@ func (cmd *Command) invalidCommand(invalid string) {
 // Parse parses the command line and calls the correct callback function
 func Parse() {
 	// Build the command tree
-	if err := cmds.RunCallback(cmds.BuildCommandTree); err != nil {
+	if err := module.RunCallback(module.BuildCommandTree); err != nil {
 		log.Fatal(err)
 	}
 

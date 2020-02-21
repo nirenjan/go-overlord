@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
 	"nirenjan.org/overlord/log"
 )
 

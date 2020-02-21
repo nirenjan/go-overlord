@@ -1,20 +1,20 @@
 package task
 
 import (
-	"nirenjan.org/overlord/cmds"
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
+	"nirenjan.org/overlord/module"
 )
 
 func init() {
-	mod := cmds.Module{Name: "task"}
+	mod := module.Module{Name: "task"}
 
-	mod.Callbacks[cmds.BuildCommandTree] = buildCommandTree
-	// mod.Callbacks[cmds.ModuleInit] = taskInit
+	mod.Callbacks[module.BuildCommandTree] = buildCommandTree
+	// mod.Callbacks[module.ModuleInit] = taskInit
 	//
-	// mod.DataCallbacks[cmds.Backup] = backupHandler
-	// mod.DataCallbacks[cmds.Restore] = restoreHandler
+	// mod.DataCallbacks[module.Backup] = backupHandler
+	// mod.DataCallbacks[module.Restore] = restoreHandler
 
-	cmds.RegisterModule(mod)
+	module.RegisterModule(mod)
 }
 
 func buildCommandTree() error {

@@ -3,7 +3,7 @@ package task
 import (
 	"errors"
 
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
 )
 
 func registerShowHandler(root *cli.Command) error {

@@ -1,20 +1,20 @@
 package journal
 
 import (
-	"nirenjan.org/overlord/cmds"
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
+	"nirenjan.org/overlord/module"
 )
 
 func init() {
-	mod := cmds.Module{Name: "journal"}
+	mod := module.Module{Name: "journal"}
 
-	mod.Callbacks[cmds.BuildCommandTree] = buildCommandTree
-	mod.Callbacks[cmds.ModuleInit] = journalInit
+	mod.Callbacks[module.BuildCommandTree] = buildCommandTree
+	mod.Callbacks[module.ModuleInit] = journalInit
 
-	mod.DataCallbacks[cmds.Backup] = backupHandler
-	mod.DataCallbacks[cmds.Restore] = restoreHandler
+	mod.DataCallbacks[module.Backup] = backupHandler
+	mod.DataCallbacks[module.Restore] = restoreHandler
 
-	cmds.RegisterModule(mod)
+	module.RegisterModule(mod)
 }
 
 func buildCommandTree() error {

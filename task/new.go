@@ -8,16 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
 	"nirenjan.org/overlord/util"
 )
-
-func dummy(cmd *cli.Command, args []string) error {
-	fmt.Printf("%#v\n", cmd)
-	fmt.Printf("%#v\n", args)
-
-	return nil
-}
 
 func registerNewHandler(root *cli.Command) error {
 	// task new

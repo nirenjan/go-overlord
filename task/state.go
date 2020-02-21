@@ -1,7 +1,7 @@
 package task
 
 import (
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
 )
 
 func registerStateTransitionHandler(root *cli.Command) error {

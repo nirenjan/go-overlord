@@ -3,15 +3,15 @@ package init
 import (
 	"fmt"
 
-	"nirenjan.org/overlord/cmds"
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
 	"nirenjan.org/overlord/config"
+	"nirenjan.org/overlord/module"
 )
 
 func init() {
-	mod := cmds.Module{Name: "init"}
+	mod := module.Module{Name: "init"}
 
-	mod.Callbacks[cmds.BuildCommandTree] = func() error {
+	mod.Callbacks[module.BuildCommandTree] = func() error {
 		cmdreg := cli.Cmd{
 			Command:   "init",
 			Usage:     " ", // We don't care about the usage
@@ -25,7 +25,7 @@ func init() {
 		return err
 	}
 
-	cmds.RegisterModule(mod)
+	module.RegisterModule(mod)
 }
 
 func initHandler(cmd *cli.Command, args []string) error {
@@ -39,7 +39,7 @@ func initHandler(cmd *cli.Command, args []string) error {
 	fmt.Println(data)
 
 	// Run the module callbacks for ModuleInit
-	err = cmds.RunCallback(cmds.ModuleInit)
+	err = module.RunCallback(module.ModuleInit)
 	if err == nil {
 		fmt.Println("Overlord initialization complete")
 	}

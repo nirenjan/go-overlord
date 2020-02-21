@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"runtime"
 
-	"nirenjan.org/overlord/cmds"
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
+	"nirenjan.org/overlord/module"
 )
 
 func init() {
-	mod := cmds.Module{Name: "version"}
+	mod := module.Module{Name: "version"}
 
-	mod.Callbacks[cmds.BuildCommandTree] = func() error {
+	mod.Callbacks[module.BuildCommandTree] = func() error {
 		cmdreg := cli.Cmd{
 			Command:   "version",
 			Usage:     " ", // We don't care about the usage
@@ -26,7 +26,7 @@ func init() {
 		return err
 	}
 
-	cmds.RegisterModule(mod)
+	module.RegisterModule(mod)
 }
 
 const version = "0.3.0-1"

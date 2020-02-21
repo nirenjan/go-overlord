@@ -3,7 +3,7 @@ package task
 import (
 	"os"
 
-	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/cli"
 	"nirenjan.org/overlord/util"
 )
 
