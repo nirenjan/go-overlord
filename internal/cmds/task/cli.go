@@ -79,5 +79,10 @@ need to be done, update the task state, due date, and priority.
 		return err
 	}
 
+	err = registerCleanupHandler(taskRoot)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

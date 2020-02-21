@@ -17,9 +17,6 @@ func BuildDb() error {
 			return err1
 		}
 
-		// We don't need the notes for the database, so clear them
-		task.Notes = ""
-
 		// Add entry to the database
 		AddDbEntry(task)
 
@@ -34,6 +31,9 @@ func BuildDb() error {
 }
 
 func AddDbEntry(task Task) {
+	// We don't need the notes for the database, so clear them
+	task.Notes = ""
+
 	DB[task.ID] = task
 }
 
