@@ -119,7 +119,7 @@ func (t *Task) stateTransition(newState State) error {
 // on the creation time, so that it doesn't change when the user changes
 // the due date or any other field.
 func (t *Task) UpdateID() {
-	data, _ := t.Created.GobEncode()
+	data := []byte(t.Created.Format(time.RFC3339))
 	t.ID = fmt.Sprintf("%x", sha256.Sum256(data))[:10]
 }
 
