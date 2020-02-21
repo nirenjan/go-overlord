@@ -2,7 +2,6 @@ package task
 
 import (
 	"sort"
-	"time"
 
 	"nirenjan.org/overlord/internal/cmds/cli"
 )
@@ -21,14 +20,25 @@ func (tl TaskList) Less(i, j int) bool {
 	t1 := tl[i]
 	t2 := tl[j]
 
-	d1 := time.Until(t1.Due)
-	d2 := time.Until(t2.Due)
-
-	if d1 != d2 {
-		return d1 < d2
+	// If deferred, completed or deleted, these should be towards the end
+	if t1.State >= Deferred || t2.State >= Deferred {
+		if t1.State != t2.State {
+			return t1.State < t2.State
+		}
 	}
 
-	return t1.Priority < t2.Priority
+	// Compare the dates using the Equal function
+	if !t1.Due.Equal(t2.Due) {
+		return t1.Due.Sub(t2.Due) < 0
+	}
+
+	// If priorities are unequal, use them
+	if t1.Priority != t2.Priority {
+		return t1.Priority < t2.Priority
+	}
+
+	// All else being equal, sort by creation date
+	return t1.Created.Sub(t2.Created) < 0
 }
 
 func registerListHandler(root *cli.Command) error {
