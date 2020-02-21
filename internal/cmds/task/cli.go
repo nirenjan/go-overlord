@@ -74,7 +74,7 @@ need to be done, update the task state, due date, and priority.
 		return err
 	}
 
-	err = registerDeleteHandler(taskRoot)
+	err = registerStateTransitionHandler(taskRoot)
 	if err != nil {
 		return err
 	}

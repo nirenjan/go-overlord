@@ -111,6 +111,12 @@ func (t *Task) stateTransition(newState State) error {
 		return fmt.Errorf("Cannot transition task from %v to %v", t.State, newState)
 	}
 
+	if newState == InProgress {
+		t.Started = time.Now()
+	} else if t.State == InProgress {
+		t.Worked += time.Since(t.Started)
+	}
+
 	t.State = newState
 	return nil
 }
