@@ -1,6 +1,8 @@
 package task
 
 import (
+	"fmt"
+
 	"nirenjan.org/overlord/internal/database"
 	"nirenjan.org/overlord/internal/util"
 )
@@ -45,4 +47,19 @@ func LoadDb() error {
 
 func SaveDb() error {
 	return database.Save(DB)
+}
+
+func getTask(id string) (Task, error) {
+	task, ok := DB[id]
+	if !ok {
+		return task, fmt.Errorf("Task %v not found", id)
+	}
+
+	var err error
+	task, err = ReadFile(task.Path)
+	if err != nil {
+		return task, err
+	}
+
+	return task, nil
 }

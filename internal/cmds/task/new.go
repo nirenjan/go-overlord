@@ -19,6 +19,21 @@ func dummy(cmd *cli.Command, args []string) error {
 	return nil
 }
 
+func registerNewHandler(root *cli.Command) error {
+	// task new
+	cmd := cli.Cmd{
+		Command:   "new",
+		Usage:     " ",
+		BriefHelp: "add new task entry",
+		LongHelp:  "Add new task entry",
+		Handler:   newHandler,
+		Args:      cli.None,
+	}
+
+	_, err := cli.RegisterCommand(root, cmd)
+	return err
+}
+
 func newHandler(cmd *cli.Command, args []string) error {
 	rd := bufio.NewReader(os.Stdin)
 
