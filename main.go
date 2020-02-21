@@ -1,14 +1,14 @@
 package main // import "nirenjan.org/overlord"
 
 import (
-	"nirenjan.org/overlord/internal/cmds/cli"
+	"nirenjan.org/overlord/cmds/cli"
 
 	// Overlord modules
-	_ "nirenjan.org/overlord/internal/cmds/backup"
-	_ "nirenjan.org/overlord/internal/cmds/init"
-	_ "nirenjan.org/overlord/internal/cmds/journal"
-	_ "nirenjan.org/overlord/internal/cmds/task"
-	_ "nirenjan.org/overlord/internal/cmds/version"
+	_ "nirenjan.org/overlord/cmds/backup"
+	_ "nirenjan.org/overlord/cmds/init"
+	_ "nirenjan.org/overlord/cmds/journal"
+	_ "nirenjan.org/overlord/cmds/task"
+	_ "nirenjan.org/overlord/cmds/version"
 )
 
 func main() {

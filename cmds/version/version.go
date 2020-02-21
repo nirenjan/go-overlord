@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"nirenjan.org/overlord/internal/cmds"
-	"nirenjan.org/overlord/internal/cmds/cli"
+	"nirenjan.org/overlord/cmds"
+	"nirenjan.org/overlord/cmds/cli"
 )
 
 func init() {

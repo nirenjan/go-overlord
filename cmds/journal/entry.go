@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"nirenjan.org/overlord/internal/config"
-	"nirenjan.org/overlord/internal/terminal"
-	"nirenjan.org/overlord/internal/util"
+	"nirenjan.org/overlord/config"
+	"nirenjan.org/overlord/terminal"
+	"nirenjan.org/overlord/util"
 )
 
 // Entry holds a single entry on disk

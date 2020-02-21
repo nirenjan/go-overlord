@@ -7,10 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"nirenjan.org/overlord/internal/cmds/cli"
-	"nirenjan.org/overlord/internal/config"
-	"nirenjan.org/overlord/internal/terminal"
-	"nirenjan.org/overlord/internal/util"
+	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/config"
+	"nirenjan.org/overlord/terminal"
+	"nirenjan.org/overlord/util"
 )
 
 func journalInit() error {

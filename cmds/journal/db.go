@@ -3,8 +3,8 @@ package journal
 import (
 	"time"
 
-	"nirenjan.org/overlord/internal/database"
-	"nirenjan.org/overlord/internal/util"
+	"nirenjan.org/overlord/database"
+	"nirenjan.org/overlord/util"
 )
 
 // The journal DB is a hash table that maps the entry ID to the entry

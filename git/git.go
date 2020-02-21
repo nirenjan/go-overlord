@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"time"
 
-	"nirenjan.org/overlord/internal/config"
-	"nirenjan.org/overlord/internal/log"
+	"nirenjan.org/overlord/config"
+	"nirenjan.org/overlord/log"
 )
 
 func module_text() string {

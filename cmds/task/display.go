@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"nirenjan.org/overlord/internal/terminal"
+	"nirenjan.org/overlord/terminal"
 )
 
 // Display the summary header

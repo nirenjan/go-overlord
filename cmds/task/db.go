@@ -3,8 +3,8 @@ package task
 import (
 	"fmt"
 
-	"nirenjan.org/overlord/internal/database"
-	"nirenjan.org/overlord/internal/util"
+	"nirenjan.org/overlord/database"
+	"nirenjan.org/overlord/util"
 )
 
 var DB = make(map[string]Task)

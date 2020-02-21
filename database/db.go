@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"nirenjan.org/overlord/internal/config"
-	"nirenjan.org/overlord/internal/log"
+	"nirenjan.org/overlord/config"
+	"nirenjan.org/overlord/log"
 )
 
 var DbError = errors.New("Database error")

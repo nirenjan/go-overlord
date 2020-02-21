@@ -9,8 +9,8 @@ import (
 	"sort"
 	"strings"
 
-	"nirenjan.org/overlord/internal/cmds"
-	"nirenjan.org/overlord/internal/log"
+	"nirenjan.org/overlord/cmds"
+	"nirenjan.org/overlord/log"
 )
 
 // ArgCount is an enumeration that describes the number of arguments needed

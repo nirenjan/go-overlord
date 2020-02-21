@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"nirenjan.org/overlord/internal/cmds/cli"
-	"nirenjan.org/overlord/internal/util"
+	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/util"
 )
 
 func dummy(cmd *cli.Command, args []string) error {

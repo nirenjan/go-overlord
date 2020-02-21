@@ -3,9 +3,9 @@ package init
 import (
 	"fmt"
 
-	"nirenjan.org/overlord/internal/cmds"
-	"nirenjan.org/overlord/internal/cmds/cli"
-	"nirenjan.org/overlord/internal/config"
+	"nirenjan.org/overlord/cmds"
+	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/config"
 )
 
 func init() {

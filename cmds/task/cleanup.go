@@ -3,8 +3,8 @@ package task
 import (
 	"os"
 
-	"nirenjan.org/overlord/internal/cmds/cli"
-	"nirenjan.org/overlord/internal/util"
+	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/util"
 )
 
 func registerCleanupHandler(root *cli.Command) error {

@@ -4,8 +4,8 @@ import (
 	"sort"
 	"time"
 
-	"nirenjan.org/overlord/internal/cmds/cli"
-	"nirenjan.org/overlord/internal/log"
+	"nirenjan.org/overlord/cmds/cli"
+	"nirenjan.org/overlord/log"
 )
 
 type TaskList []Task

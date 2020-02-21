@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"nirenjan.org/overlord/internal/config"
+	"nirenjan.org/overlord/config"
 )
 
 type State int

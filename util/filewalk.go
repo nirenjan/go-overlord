@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"nirenjan.org/overlord/internal/config"
+	"nirenjan.org/overlord/config"
 )
 
 // FileWalk walks the filesystem for the given module, and runs the callback

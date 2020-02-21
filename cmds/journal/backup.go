@@ -3,7 +3,7 @@ package journal
 import (
 	"encoding/json"
 
-	"nirenjan.org/overlord/internal/util"
+	"nirenjan.org/overlord/util"
 )
 
 func backupHandler(_ []byte) ([]byte, error) {
