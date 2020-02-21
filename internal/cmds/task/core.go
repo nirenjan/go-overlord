@@ -13,9 +13,8 @@ import (
 type State int
 
 const (
-	NotStarted State = iota
-	InProgress
-	Paused
+	InProgress State = iota
+	Assigned
 	Blocked
 	Deferred
 	Completed
@@ -24,12 +23,10 @@ const (
 
 func (s State) String() string {
 	switch s {
-	case NotStarted:
-		return "not started"
+	case Assigned:
+		return "assigned"
 	case InProgress:
-		return "in progress"
-	case Paused:
-		return "paused"
+		return "in-progress"
 	case Blocked:
 		return "blocked"
 	case Deferred:
@@ -66,9 +63,8 @@ func parsePriority(prio string) (priority int, err error) {
 }
 
 // Allowed state transitions
-// NotStarted -> InProgress, Blocked, Deferred, Deleted
-// InProgress -> Paused, Blocked, Completed, Deferred
-// Paused -> InProgress, Blocked, Deferred, Deleted
+// Assigned -> InProgress, Blocked, Deferred, Deleted
+// InProgress -> Assigned, Blocked, Completed, Deferred
 // Blocked -> InProgress, Deferred, Deleted
 // Deferred -> InProgress, Blocked, Deleted
 // Completed -> _
@@ -76,7 +72,7 @@ func parsePriority(prio string) (priority int, err error) {
 func (t *Task) stateTransition(newState State) error {
 	var allowed bool
 	switch t.State {
-	case NotStarted:
+	case Assigned:
 		switch newState {
 		case InProgress, Blocked, Deferred, Deleted:
 			allowed = true
@@ -84,13 +80,7 @@ func (t *Task) stateTransition(newState State) error {
 
 	case InProgress:
 		switch newState {
-		case Paused, Blocked, Completed, Deferred:
-			allowed = true
-		}
-
-	case Paused:
-		switch newState {
-		case InProgress, Blocked, Deferred, Deleted:
+		case Assigned, Blocked, Completed, Deferred:
 			allowed = true
 		}
 

@@ -45,7 +45,7 @@ func newHandler(cmd *cli.Command, args []string) error {
 		Created:  time.Now(),
 		Due:      dueDate,
 		Priority: 5,
-		State:    NotStarted,
+		State:    Assigned,
 	}
 
 	// Read the task name from the user

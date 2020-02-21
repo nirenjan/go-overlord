@@ -109,7 +109,7 @@ func stateTransitionHandler(cmd *cli.Command, args []string) error {
 		newState = InProgress
 
 	case "stop":
-		newState = Paused
+		newState = Assigned
 
 	case "block":
 		newState = Blocked

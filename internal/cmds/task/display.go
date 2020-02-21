@@ -17,13 +17,10 @@ func Header() {
 // Symbol returns a single Unicode symbol for the corresponding State
 func (s State) Symbol() string {
 	switch s {
-	case NotStarted:
-		return "\u23F9\uFE0F "
-
 	case InProgress:
 		return "\u25B6\uFE0F "
 
-	case Paused:
+	case Assigned:
 		return "\u23F8\uFE0F "
 
 	case Blocked:
@@ -43,7 +40,7 @@ func (s State) Symbol() string {
 }
 
 func (t *Task) DueSymbol() string {
-	if t.State >= NotStarted && t.State <= Paused {
+	if t.State >= InProgress && t.State <= Assigned {
 		due := time.Until(t.Due)
 		if due <= 0 {
 			// Alarm clock
