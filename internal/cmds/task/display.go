@@ -18,13 +18,13 @@ func Header() {
 func (s State) Symbol() string {
 	switch s {
 	case NotStarted:
-		return "\U0001F6D1"
+		return "\u23F9\uFE0F "
 
 	case InProgress:
-		return "\u25B6"
+		return "\u25B6\uFE0F "
 
 	case Paused:
-		return "\u23F8"
+		return "\u23F8\uFE0F "
 
 	case Blocked:
 		return "\u26D4"
@@ -33,7 +33,7 @@ func (s State) Symbol() string {
 		return "\u23E9"
 
 	case Completed:
-		return "\u2705"
+		return "\u2714\uFE0F "
 
 	case Deleted:
 		return "\u274C"
