@@ -2,6 +2,7 @@ package task
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"nirenjan.org/overlord/internal/terminal"
@@ -9,63 +10,113 @@ import (
 
 // Display the summary header
 func Header() {
-	fmt.Println("ID          Due Date    Pri  Status  Description")
+	fmt.Println("ID          Due Date    Pri  Description/Status")
 	fmt.Println(terminal.HorizontalLine())
 }
 
-// Task Status as symbols
-func (t *Task) Status() string {
-	var Symbol = []rune{'\U0001F6D1', '\u25B6', '\u23F8', '\u26D4', '\u23E9', '\u2705', '\u274C'}
-	var status string
-	if t.State >= NotStarted && t.State <= Deleted {
-		status = string(Symbol[t.State]) + " "
-	} else {
-		status = fmt.Sprintf("(%d) ", t.State)
+// Symbol returns a single Unicode symbol for the corresponding State
+func (s State) Symbol() string {
+	switch s {
+	case NotStarted:
+		return "\U0001F6D1"
+
+	case InProgress:
+		return "\u25B6"
+
+	case Paused:
+		return "\u23F8"
+
+	case Blocked:
+		return "\u26D4"
+
+	case Deferred:
+		return "\u23E9"
+
+	case Completed:
+		return "\u2705"
+
+	case Deleted:
+		return "\u274C"
 	}
 
+	return fmt.Sprintf("(%d)", s)
+}
+
+func (t *Task) DueSymbol() string {
 	if t.State >= NotStarted && t.State <= Paused {
 		due := time.Until(t.Due)
 		if due <= 0 {
 			// Alarm clock
-			status += "\u23F0"
+			return "\u23F0"
 		} else if due <= 24*time.Hour {
 			// Hourglass, time's ticking...
-			status += "\u23F3"
+			return "\u23F3"
 		} else if due <= 96*time.Hour {
-			status += "\U0001F4C5"
+			return "\U0001F4C5"
 		}
 	}
+
+	return ""
+}
+
+// Task Status as symbols
+func (t *Task) Status() string {
+	status := t.State.Symbol() + t.DueSymbol() + " "
 
 	return status
 }
 
 // Display a task summary
 func (t *Task) Summary() {
-	fmt.Printf("%-12v%-12v %v   %-6v %v\n",
-		t.ID,
-		t.Due.Format("2006-01-02"),
-		t.Priority,
-		t.Status(),
-		t.Description)
+	s := fmt.Sprintf("%-12v", t.ID)
+	if t.State <= Blocked {
+		s += fmt.Sprintf("%-12v ", t.Due.Format("2006-01-02"))
+	} else {
+		s += strings.Repeat(" ", 13)
+	}
+
+	if t.State <= Deferred {
+		s += fmt.Sprintf("%v   ", t.Priority)
+	} else {
+		s += strings.Repeat(" ", 4)
+	}
+
+	s += fmt.Sprint(t.Status(), t.Description)
+	fmt.Println(s)
+	// fmt.Printf("%-12v%-12v %v   %v %v\n",
+	// 	t.ID,
+	// 	t.Due.Format("2006-01-02"),
+	// 	t.Priority,
+	// 	t.Status(),
+	// 	t.Description)
 }
 
 // Display task details
 func (t *Task) Show() {
 	fmt.Println("Task:    ", t.Description)
 
-	// The due time is 12 AM on the due date, which means that we
-	// really have till 11:59:59 PM on that date. Add an extra
-	// 23h59m59s (86399s) to calculate the number of days remaining.
-	due := time.Until(t.Due.Add(86399 * time.Second))
-	fmt.Printf("Due:      %v ", t.Due.Format("Mon, Jan 2 2006"))
-	if due <= 0 {
-		fmt.Println(terminal.Foreground(terminal.Red) + "OVERDUE" + terminal.Reset())
-	} else {
-		due = due.Round(24 * time.Hour)
-		fmt.Printf("(in %v days)\n", int(due/(24*time.Hour)))
+	// Show the due date, but only if the task state is not started, in
+	// progress, paused or blocked. If deferred, completed, or deleted,
+	// then the due date doesn't make any sense
+	if t.State <= Blocked {
+		// The due time is 12 AM on the due date, which means that we
+		// really have till 11:59:59 PM on that date. Add an extra
+		// 23h59m59s (86399s) to calculate the number of days remaining.
+		due := time.Until(t.Due.Add(86399 * time.Second))
+		fmt.Printf("Due:      %v ", t.Due.Format("Mon, Jan 2 2006"))
+		if due <= 0 {
+			fmt.Println(terminal.Foreground(terminal.Red) + "OVERDUE" + terminal.Reset())
+		} else {
+			due = due.Round(24 * time.Hour)
+			fmt.Printf("(in %v days)\n", int(due/(24*time.Hour)))
+		}
 	}
 
-	fmt.Println("Priority:", t.Priority)
+	// Don't display the priority if the task has already been completed
+	// or deleted
+	if t.State < Completed {
+		fmt.Println("Priority:", t.Priority)
+	}
 	fmt.Println("Status:  ", t.State)
 
 	worked := t.Worked
@@ -73,7 +124,7 @@ func (t *Task) Show() {
 		worked += time.Since(t.Started)
 	}
 	if worked != 0 {
-		fmt.Println("Worked:  ", t.Worked)
+		fmt.Println("Worked:  ", worked)
 	}
 
 	if len(t.Notes) != 0 {
