@@ -51,14 +51,33 @@ func (t *Task) Summary() {
 
 // Display task details
 func (t *Task) Show() {
-	fmt.Println(t.Description)
+	fmt.Println("Task:    ", t.Description)
 
-	due := time.Until(t.Due)
-	fmt.Printf("Due: %v ", t.Due.Format("Mon, Jan 2 2006"))
+	// The due time is 12 AM on the due date, which means that we
+	// really have till 11:59:59 PM on that date. Add an extra
+	// 23h59m59s (86399s) to calculate the number of days remaining.
+	due := time.Until(t.Due.Add(86399 * time.Second))
+	fmt.Printf("Due:      %v ", t.Due.Format("Mon, Jan 2 2006"))
 	if due <= 0 {
 		fmt.Println(terminal.Foreground(terminal.Red) + "OVERDUE" + terminal.Reset())
 	} else {
 		due = due.Round(24 * time.Hour)
 		fmt.Printf("(in %v days)\n", int(due/(24*time.Hour)))
+	}
+
+	fmt.Println("Priority:", t.Priority)
+	fmt.Println("Status:  ", t.State)
+
+	worked := t.Worked
+	if t.State == InProgress {
+		worked += time.Since(t.Started)
+	}
+	if worked != 0 {
+		fmt.Println("Worked:  ", t.Worked)
+	}
+
+	if len(t.Notes) != 0 {
+		fmt.Println("")
+		fmt.Println(t.Notes)
 	}
 }
