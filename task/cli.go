@@ -9,10 +9,9 @@ func init() {
 	mod := module.Module{Name: "task"}
 
 	mod.Callbacks[module.BuildCommandTree] = buildCommandTree
-	// mod.Callbacks[module.ModuleInit] = taskInit
-	//
-	// mod.DataCallbacks[module.Backup] = backupHandler
-	// mod.DataCallbacks[module.Restore] = restoreHandler
+
+	mod.DataCallbacks[module.Backup] = backupHandler
+	mod.DataCallbacks[module.Restore] = restoreHandler
 
 	module.RegisterModule(mod)
 }
