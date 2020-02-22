@@ -96,10 +96,7 @@ func (t *Task) Show() {
 	// progress, paused or blocked. If deferred, completed, or deleted,
 	// then the due date doesn't make any sense
 	if t.State <= Blocked {
-		// The due time is 12 AM on the due date, which means that we
-		// really have till 11:59:59 PM on that date. Add an extra
-		// 23h59m59s (86399s) to calculate the number of days remaining.
-		due := time.Until(t.Due.Add(86399 * time.Second))
+		due := time.Until(t.Due)
 		fmt.Printf("Due:      %v ", t.Due.Format("Mon, Jan 2 2006"))
 		if due <= 0 {
 			fmt.Println(terminal.Foreground(terminal.Red) + "OVERDUE" + terminal.Reset())

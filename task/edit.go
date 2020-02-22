@@ -97,7 +97,7 @@ func editHandler(cmd *cli.Command, args []string) error {
 				return err
 			}
 
-			task.Due = dueDate
+			task.Due = dueDate.Add(86399 * time.Second)
 		}
 
 	case "priority":
