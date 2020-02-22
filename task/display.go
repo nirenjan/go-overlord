@@ -128,4 +128,6 @@ func (t *Task) Show() {
 		fmt.Println("")
 		fmt.Println(t.Notes)
 	}
+
+	fmt.Println(terminal.HorizontalLine())
 }

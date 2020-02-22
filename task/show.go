@@ -1,8 +1,6 @@
 package task
 
 import (
-	"errors"
-
 	"nirenjan.org/overlord/cli"
 )
 
@@ -36,8 +34,17 @@ func showHandler(cmd *cli.Command, args []string) error {
 	}
 
 	if len(args) == 1 {
-		// Show all arguments
-		return errors.New("show all not yet implemented")
+		// Show all tasks
+		tasks := sortedTaskList()
+
+		for _, task := range tasks {
+			task, err = ReadFile(task.Path)
+			if err != nil {
+				return err
+			}
+
+			task.Show()
+		}
 	} else {
 		var task Task
 		task, err = getTask(args[1])
