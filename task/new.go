@@ -1,7 +1,7 @@
 package task
 
 import (
-	"bufio"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"nirenjan.org/overlord/cli"
+	"nirenjan.org/overlord/log"
 	"nirenjan.org/overlord/util"
 )
 
@@ -16,129 +17,106 @@ func registerNewHandler(root *cli.Command) error {
 	// task new
 	cmd := cli.Cmd{
 		Command:   "new",
-		Usage:     " ",
+		Usage:     "[-due YYYY-MM-DD] [-priority {0-9}] [-notes] description",
 		BriefHelp: "add new task entry",
-		LongHelp:  "Add new task entry",
-		Handler:   newHandler,
-		Args:      cli.None,
+		LongHelp: `
+Add a new task entry with the given parameters. This command accepts
+the following options
+
+	-due YYYY-MM-DD         The due date for the task (defaults to 1 week out)
+	-priority {0-9}         The priority for the task (defaults to 5)
+	-notes                  This will open an editor to add task notes
+`,
+		Handler: newHandler,
+		Args:    cli.AtLeast,
+		Count:   1,
 	}
 
 	_, err := cli.RegisterCommand(root, cmd)
 	return err
 }
 
-func newHandler(cmd *cli.Command, args []string) error {
-	rd := bufio.NewReader(os.Stdin)
+type dueDate time.Time
 
-	dueDate, _ := time.ParseInLocation("2006-01-02",
+func (d *dueDate) Set(s string) error {
+	var err error
+	var date time.Time
+	date, err = time.ParseInLocation("2006-01-02", s, time.Local)
+
+	if err == nil {
+		*d = dueDate(date)
+	}
+	return err
+}
+
+func (d dueDate) String() string {
+	return (time.Time(d)).Format("2006-01-02")
+}
+
+type Priority int
+
+func (p *Priority) Set(s string) error {
+	pri, err := parsePriority(s)
+	if err == nil {
+		*p = Priority(pri)
+	}
+
+	return err
+}
+
+func (p Priority) String() string {
+	return fmt.Sprint(int(p))
+}
+
+func newHandler(cmd *cli.Command, args []string) error {
+	defaultDueDate, _ := time.ParseInLocation("2006-01-02",
 		time.Now().AddDate(0, 0, 7).Format("2006-01-02"),
 		time.Local)
 	var t = Task{
 		// Default due date is a week from now
 		Created:  time.Now(),
-		Due:      dueDate,
+		Due:      defaultDueDate,
 		Priority: 5,
 		State:    Assigned,
 	}
 
-	// Read the task name from the user
-	for {
-		fmt.Print("Brief task description: ")
-		line, err := rd.ReadString('\n')
-		if err != nil {
-			// Reader error, don't think we can fix this
-			return err
-		}
+	var due = dueDate(defaultDueDate)
+	var priority = Priority(5)
+	var notes = false
 
-		line = strings.TrimSpace(line)
-		if line == "" {
-			fmt.Println("You must specify a task description\n")
-		} else {
-			t.Description = line
-			break
-		}
+	fs := flag.NewFlagSet("overlord tag new", flag.ContinueOnError)
+	fs.BoolVar(&notes, "notes", false, "edit notes")
+	fs.Var(&priority, "priority", "set priority (0-9)")
+	fs.Var(&due, "due", "due date (YYYY-MM-DD format)")
+
+	// Discard output
+	fs.SetOutput(ioutil.Discard)
+
+	// Parse the output
+	err := fs.Parse(args[1:])
+	if err != nil {
+		return err
+	}
+	log.Debug("Output from fs.Parse:", notes, due, priority, fs.Args())
+
+	t.Description = strings.TrimSpace(strings.Join(fs.Args(), " "))
+	if len(t.Description) == 0 {
+		return fmt.Errorf("Missing task description")
 	}
 
-	// Read the due date from the user
-	for {
-		fmt.Printf("Due date in YYYY-MM-DD format [%v]: ",
-			t.Due.Format("2006-01-02"))
+	t.Due = time.Time(due).Add(86399 * time.Second)
+	t.Priority = int(priority)
 
-		line, err := rd.ReadString('\n')
+	if notes {
+		// Call the editor to edit the notes
+		err = t.EditNotes()
 		if err != nil {
-			// Reader error, don't think we can fix this
 			return err
-		}
-
-		line = strings.TrimSpace(line)
-		if line == "" {
-			// We can break here, the user is accepting the default
-			break
-		} else {
-			due, err1 := time.ParseInLocation("2006-01-02", line, time.Local)
-			if err1 != nil {
-				fmt.Println(err1)
-				fmt.Println("Error parsing due date, try again\n")
-			} else {
-				t.Due = due
-				break
-			}
-		}
-	}
-
-	// Read the priority from the user
-	for {
-		fmt.Printf("Task Priority (0-9) [%v]: ", t.Priority)
-
-		line, err := rd.ReadString('\n')
-		if err != nil {
-			// Reader error, don't think we can fix this
-			return err
-		}
-
-		line = strings.TrimSpace(line)
-		if line == "" {
-			// We can break here, the user is accepting the default
-			break
-		} else {
-			prio, err1 := parsePriority(line)
-			if err1 != nil {
-				fmt.Println(err1.Error() + "\n")
-			} else {
-				t.Priority = prio
-				break
-			}
-		}
-	}
-
-	// Ask the user if they want to add notes
-	for {
-		fmt.Print("Add notes to task? [y/N]: ")
-
-		line, err := rd.ReadString('\n')
-		if err != nil {
-			// Reader error, don't think we can fix this
-			return err
-		}
-
-		line = strings.ToLower(strings.TrimSpace(line))
-		if line == "" || line == "n" {
-			// We can break here, no notes needed
-			break
-		} else if line == "y" {
-			// Call the editor to edit the notes
-			err = t.EditNotes()
-			if err != nil {
-				return err
-			}
-			break
-		} else {
-			fmt.Println("Please enter y or n only\n")
 		}
 	}
 
 	t.UpdateID()
-	err := t.UpdatePath()
+	err = t.UpdatePath()
 	if err != nil {
 		return err
 	}
