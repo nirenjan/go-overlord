@@ -85,9 +85,12 @@ func listHandler(cmd *cli.Command, args []string) error {
 
 	list := buildEntryList(filter)
 
+	out := util.NewPager()
+	defer out.Show()
+
 	// Print header
-	fmt.Printf("%-10s  %-10s  %s\n", "ID", "Date", "Title")
-	fmt.Println(terminal.HorizontalLine())
+	fmt.Fprintf(out, "%-10s  %-10s  %s\n", "ID", "Date", "Title")
+	fmt.Fprintln(out, terminal.HorizontalLine())
 
 	for _, id := range list {
 		disp_id := id[9:]
@@ -95,7 +98,7 @@ func listHandler(cmd *cli.Command, args []string) error {
 		date := entry.Date.Format("2006-01-02")
 		title := entry.Title
 
-		fmt.Printf("%-10s  %-10s  %s\n", disp_id, date, title)
+		fmt.Fprintf(out, "%-10s  %-10s  %s\n", disp_id, date, title)
 	}
 
 	return nil
@@ -112,14 +115,17 @@ func displayHandler(cmd *cli.Command, args []string) error {
 	}
 
 	list := buildEntryList(filter)
+	out := util.NewPager()
+	defer out.Show()
 
 	for _, id := range list {
 		db_entry := DB[id]
 		entry, err1 := entryFromFile(db_entry.Path)
 		if err1 == nil {
-			entry.Display()
+			entry.Display(out)
 		} else {
 			err = err1
+			break
 		}
 	}
 
@@ -157,7 +163,9 @@ func showHandler(cmd *cli.Command, args []string) error {
 		return err
 	}
 
-	entry.Display()
+	out := util.NewPager()
+	entry.Display(out)
+	out.Show()
 	return nil
 }
 
@@ -238,6 +246,8 @@ func tagsHandler(cmd *cli.Command, args []string) error {
 	tags := sort.StringSlice(taglist)
 	tags.Sort()
 
-	fmt.Println(strings.Join(tags, "\n"))
+	out := util.NewPager()
+	fmt.Fprintln(out, strings.Join(tags, "\n"))
+	out.Show()
 	return nil
 }

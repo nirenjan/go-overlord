@@ -2,6 +2,7 @@ package task
 
 import (
 	"nirenjan.org/overlord/cli"
+	"nirenjan.org/overlord/util"
 )
 
 func registerShowHandler(root *cli.Command) error {
@@ -33,6 +34,9 @@ func showHandler(cmd *cli.Command, args []string) error {
 		return err
 	}
 
+	out := util.NewPager()
+	defer out.Show()
+
 	if len(args) == 1 {
 		// Show all tasks
 		tasks := sortedTaskList()
@@ -43,7 +47,7 @@ func showHandler(cmd *cli.Command, args []string) error {
 				return err
 			}
 
-			task.Show()
+			task.Show(out)
 		}
 	} else {
 		var task Task
@@ -52,7 +56,7 @@ func showHandler(cmd *cli.Command, args []string) error {
 			return err
 		}
 
-		task.Show()
+		task.Show(out)
 	}
 
 	return nil

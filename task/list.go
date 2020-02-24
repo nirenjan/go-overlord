@@ -6,6 +6,7 @@ import (
 
 	"nirenjan.org/overlord/cli"
 	"nirenjan.org/overlord/log"
+	"nirenjan.org/overlord/util"
 )
 
 type TaskList []Task
@@ -236,12 +237,14 @@ func listHandler(cmd *cli.Command, args []string) error {
 
 	tasks := sortedTaskList()
 
-	Header()
+	out := util.NewPager()
+	Header(out)
 	for _, task := range tasks {
 		if task.Filter(args[0]) {
-			task.Summary()
+			task.Summary(out)
 		}
 	}
+	out.Show()
 
 	return nil
 }

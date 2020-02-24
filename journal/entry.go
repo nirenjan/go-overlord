@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -132,9 +133,7 @@ func (e *Entry) UpdateID() string {
 	return id
 }
 
-func (entry *Entry) Display() {
-	out := os.Stdout
-
+func (entry *Entry) Display(out io.StringWriter) {
 	out.WriteString(terminal.Foreground(terminal.Yellow))
 	out.WriteString(entry.Date.Format(time.RFC1123))
 
