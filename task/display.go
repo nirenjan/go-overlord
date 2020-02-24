@@ -118,7 +118,7 @@ func (t *Task) Show() {
 		worked += time.Since(t.Started)
 	}
 	if worked != 0 {
-		fmt.Println("Worked:  ", worked)
+		fmt.Println("Worked:  ", worked.Round(time.Second))
 	}
 
 	if len(t.Notes) != 0 {
