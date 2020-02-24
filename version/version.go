@@ -2,6 +2,7 @@
 package version
 
 import (
+	"encoding/json"
 	"fmt"
 	"runtime"
 
@@ -26,6 +27,8 @@ func init() {
 		return err
 	}
 
+	mod.DataCallbacks[module.Backup] = backupHandler
+
 	module.RegisterModule(mod)
 }
 
@@ -38,4 +41,8 @@ func versionHandler(cmd *cli.Command, args []string) error {
 	fmt.Printf("Running on %v/%v\n", runtime.GOOS, runtime.GOARCH)
 
 	return nil
+}
+
+func backupHandler(_ []byte) ([]byte, error) {
+	return json.Marshal(version)
 }
