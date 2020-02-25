@@ -169,6 +169,29 @@ func showHandler(cmd *cli.Command, args []string) error {
 	return nil
 }
 
+// retagHandler retags the entry with the given tags
+func retagHandler(cmd *cli.Command, args []string) error {
+	entry_id := args[1]
+
+	var err error
+	var entry Entry
+	err = LoadDb()
+	if err != nil {
+		return err
+	}
+
+	entry, err = getEntryByIdSuffix(entry_id)
+	if err != nil {
+		return err
+	}
+
+	entry.Tags = args[2:]
+	entry.Write()
+
+	AddDbEntry(entry)
+	return SaveDb()
+}
+
 // editHandler edits the entry with the given ID
 func editHandler(cmd *cli.Command, args []string) error {
 	entry_id := args[1]

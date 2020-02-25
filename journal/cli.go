@@ -134,6 +134,22 @@ contain the characters a-z, 0-9 and hyphen (-).
 		return err
 	}
 
+	// journal retag <id> tag [tag ...]
+	cmd = cli.Cmd{
+		Command:   "retag",
+		Usage:     "<id> tag [tag ...]",
+		BriefHelp: "retag the entry with the given tags",
+		LongHelp:  "retag the entry with the given tags",
+		Handler:   retagHandler,
+		Args:      cli.AtLeast,
+		Count:     2,
+	}
+
+	_, err = cli.RegisterCommand(journalRoot, cmd)
+	if err != nil {
+		return err
+	}
+
 	// journal tags
 	cmd = cli.Cmd{
 		Command:   "tags",
