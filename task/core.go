@@ -105,6 +105,7 @@ func (t *Task) stateTransition(newState State) error {
 		t.Started = time.Now()
 	} else if t.State == InProgress {
 		t.Worked += time.Since(t.Started)
+		t.Started = time.Time{}
 	}
 
 	t.State = newState
