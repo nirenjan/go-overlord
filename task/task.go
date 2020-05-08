@@ -25,23 +25,14 @@ func ReadFile(path string) (Task, error) {
 		case 0:
 			// Created
 			task.Created, err = time.ParseInLocation(time.RFC3339, text, time.Local)
-			if err != nil {
-				return task, err
-			}
 
 		case 1:
 			// Due date
 			task.Due, err = time.ParseInLocation(time.RFC3339, text, time.Local)
-			if err != nil {
-				return task, err
-			}
 
 		case 2:
 			// Priority
 			task.Priority, err = parsePriority(text)
-			if err != nil {
-				return task, err
-			}
 
 		case 3:
 			// State
@@ -55,16 +46,10 @@ func ReadFile(path string) (Task, error) {
 		case 4:
 			// Started
 			task.Started, err = time.ParseInLocation(time.RFC3339, text, time.Local)
-			if err != nil {
-				return task, err
-			}
 
 		case 5:
 			// Worked
 			task.Worked, err = time.ParseDuration(text)
-			if err != nil {
-				return task, err
-			}
 
 		case 6:
 			// Description
@@ -75,6 +60,10 @@ func ReadFile(path string) (Task, error) {
 		}
 
 		line++
+	}
+
+	if err != nil {
+		return task, err
 	}
 
 	task.UpdateID()

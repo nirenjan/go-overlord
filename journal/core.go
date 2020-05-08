@@ -52,15 +52,15 @@ func newHandler(cmd *cli.Command, args []string) error {
 
 // buildEntryList generates a sorted list of entries based on the given filter
 func buildEntryList(filter []string) []string {
-	var list = make([]string, len(DB))
+	var list = make([]string, len(db))
 	i := 0
-	for id, entry := range DB {
-		use_entry := true
+	for id, entry := range db {
+		useEntry := true
 		if len(filter) > 0 {
-			use_entry = util.TagsIntersection(filter, entry.Tags)
+			useEntry = util.TagsIntersection(filter, entry.Tags)
 		}
 
-		if use_entry {
+		if useEntry {
 			list[i] = id
 			i++
 		}
@@ -93,12 +93,12 @@ func listHandler(cmd *cli.Command, args []string) error {
 	fmt.Fprintln(out, terminal.HorizontalLine())
 
 	for _, id := range list {
-		disp_id := id[9:]
-		entry := DB[id]
+		dispID := id[9:]
+		entry := db[id]
 		date := entry.Date.Format("2006-01-02")
 		title := entry.Title
 
-		fmt.Fprintf(out, "%-10s  %-10s  %s\n", disp_id, date, title)
+		fmt.Fprintf(out, "%-10s  %-10s  %s\n", dispID, date, title)
 	}
 
 	return nil
@@ -119,8 +119,8 @@ func displayHandler(cmd *cli.Command, args []string) error {
 	defer out.Show()
 
 	for _, id := range list {
-		db_entry := DB[id]
-		entry, err1 := entryFromFile(db_entry.Path)
+		dbEntry := db[id]
+		entry, err1 := entryFromFile(dbEntry.Path)
 		if err1 == nil {
 			entry.Display(out)
 		} else {
@@ -132,10 +132,10 @@ func displayHandler(cmd *cli.Command, args []string) error {
 	return err
 }
 
-func getEntryByIdSuffix(entry_id string) (Entry, error) {
-	for id, db_entry := range DB {
-		if strings.HasSuffix(id, entry_id) {
-			entry, err := entryFromFile(db_entry.Path)
+func getEntryByIdSuffix(entryID string) (Entry, error) {
+	for id, dbEntry := range db {
+		if strings.HasSuffix(id, entryID) {
+			entry, err := entryFromFile(dbEntry.Path)
 			if err != nil {
 				return Entry{}, err
 			}
@@ -149,7 +149,7 @@ func getEntryByIdSuffix(entry_id string) (Entry, error) {
 
 // showHandler shows the entry with the given ID
 func showHandler(cmd *cli.Command, args []string) error {
-	entry_id := args[1]
+	entryID := args[1]
 
 	var err error
 	var entry Entry
@@ -158,7 +158,7 @@ func showHandler(cmd *cli.Command, args []string) error {
 		return err
 	}
 
-	entry, err = getEntryByIdSuffix(entry_id)
+	entry, err = getEntryByIdSuffix(entryID)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func showHandler(cmd *cli.Command, args []string) error {
 
 // retagHandler retags the entry with the given tags
 func retagHandler(cmd *cli.Command, args []string) error {
-	entry_id := args[1]
+	entryID := args[1]
 
 	var err error
 	var entry Entry
@@ -180,7 +180,7 @@ func retagHandler(cmd *cli.Command, args []string) error {
 		return err
 	}
 
-	entry, err = getEntryByIdSuffix(entry_id)
+	entry, err = getEntryByIdSuffix(entryID)
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func retagHandler(cmd *cli.Command, args []string) error {
 
 // editHandler edits the entry with the given ID
 func editHandler(cmd *cli.Command, args []string) error {
-	entry_id := args[1]
+	entryID := args[1]
 
 	var err error
 	var entry Entry
@@ -203,7 +203,7 @@ func editHandler(cmd *cli.Command, args []string) error {
 		return err
 	}
 
-	entry, err = getEntryByIdSuffix(entry_id)
+	entry, err = getEntryByIdSuffix(entryID)
 	if err != nil {
 		return err
 	}
@@ -221,7 +221,7 @@ func editHandler(cmd *cli.Command, args []string) error {
 
 // deleteHandler deletes the entry with the given ID
 func deleteHandler(cmd *cli.Command, args []string) error {
-	entry_id := args[1]
+	entryID := args[1]
 
 	var err error
 	var entry Entry
@@ -230,7 +230,7 @@ func deleteHandler(cmd *cli.Command, args []string) error {
 		return err
 	}
 
-	entry, err = getEntryByIdSuffix(entry_id)
+	entry, err = getEntryByIdSuffix(entryID)
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func tagsHandler(cmd *cli.Command, args []string) error {
 
 	var tagset = make(map[string]bool)
 
-	for _, entry := range DB {
+	for _, entry := range db {
 		for _, tag := range entry.Tags {
 			tagset[tag] = true
 		}

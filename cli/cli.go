@@ -18,11 +18,12 @@ import (
 type ArgCount uint
 
 const (
-	None ArgCount = iota
-	Any
-	Exact
-	AtLeast
-	AtMost
+	// None means that this command takes no arguments
+	None    ArgCount = iota
+	Any              // Any means that this command takes any number of arguments
+	Exact            // Exact means that this command takes exactly N arguments
+	AtLeast          // AtLeast means that this command takes at least N arguments
+	AtMost           // AtMost means that this command takes at most N arguments
 )
 
 // Cmd is a structure meant to hold command or command group related
@@ -331,34 +332,38 @@ func Parse() {
 		parentNode.help()
 	}
 
-	// Check the number of arguments itself, if we don't have enough arguments,
-	// then display the Usage info for the command and abort
-	// Get the number of arguments, ignore the command itself
-	arg_count := uint(len(os.Args[index:]) - 1)
-	var show_usage bool
-	switch parentNode.cmd.Args {
-	case None:
-		show_usage = arg_count != 0
-
-	case Exact:
-		show_usage = arg_count != parentNode.cmd.Count
-
-	case AtLeast:
-		show_usage = arg_count < parentNode.cmd.Count
-
-	case AtMost:
-		show_usage = arg_count > parentNode.cmd.Count
-
-	default:
-		show_usage = false
-	}
-
-	if show_usage {
-		parentNode.Usage()
-	}
+	checkShowUsage(parentNode, index)
 
 	err := parentNode.cmd.Handler(parentNode, os.Args[index:])
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func checkShowUsage(node *Command, index int) {
+	// Check the number of arguments itself, if we don't have enough arguments,
+	// then display the Usage info for the command and abort
+	// Get the number of arguments, ignore the command itself
+	argCount := uint(len(os.Args[index:]) - 1)
+	var showUsage bool
+	switch node.cmd.Args {
+	case None:
+		showUsage = argCount != 0
+
+	case Exact:
+		showUsage = argCount != node.cmd.Count
+
+	case AtLeast:
+		showUsage = argCount < node.cmd.Count
+
+	case AtMost:
+		showUsage = argCount > node.cmd.Count
+
+	default:
+		showUsage = false
+	}
+
+	if showUsage {
+		node.Usage()
 	}
 }

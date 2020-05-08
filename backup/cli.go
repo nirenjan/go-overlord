@@ -175,6 +175,9 @@ func importHandler(cmd *cli.Command, args []string) error {
 
 	var data = make(map[string]json.RawMessage)
 	err = json.Unmarshal(inData, &data)
+	if err != nil {
+		return err
+	}
 
 	for _, it := range module.IterateCallback(module.Restore) {
 		_, err = it.Callback([]byte(data[it.Name]))

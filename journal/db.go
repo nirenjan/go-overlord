@@ -18,7 +18,7 @@ type DBEntry struct {
 	Path  string
 }
 
-var DB = make(map[string]DBEntry)
+var db = make(map[string]DBEntry)
 
 func BuildDb() error {
 	err := util.FileWalk("journal", ".entry", func(path string) error {
@@ -51,17 +51,17 @@ func AddDbEntry(entry Entry) {
 
 	id := entry.ID
 
-	DB[id] = dbEntry
+	db[id] = dbEntry
 }
 
 func DeleteDbEntry(entry Entry) {
-	delete(DB, entry.ID)
+	delete(db, entry.ID)
 }
 
 func SaveDb() error {
-	return database.Save(DB)
+	return database.Save(db)
 }
 
 func LoadDb() error {
-	return database.Load(&DB, BuildDb)
+	return database.Load(&db, BuildDb)
 }

@@ -12,8 +12,6 @@ import (
 	"nirenjan.org/overlord/log"
 )
 
-var DbError = errors.New("Database error")
-
 func moduleDB() (string, string, error) {
 	_, file, _, ok := runtime.Caller(2)
 	if !ok {
@@ -39,6 +37,7 @@ func moduleDB() (string, string, error) {
 	return module, modDb, nil
 }
 
+// Load loads the module specific database from the on-disk storage
 func Load(e interface{}, rebuild func() error) error {
 	modName, modDb, err := moduleDB()
 	if err != nil {
@@ -68,6 +67,7 @@ func Load(e interface{}, rebuild func() error) error {
 	return nil
 }
 
+// Save saves the module specific database to on-disk storage
 func Save(e interface{}) error {
 	modName, modDb, err := moduleDB()
 	if err != nil {

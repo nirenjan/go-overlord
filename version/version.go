@@ -32,7 +32,7 @@ func init() {
 	module.RegisterModule(mod)
 }
 
-const version = "0.3.0-1"
+const version = "0.3.0-2"
 
 func versionHandler(cmd *cli.Command, args []string) error {
 	// Ignore arguments
